@@ -1,6 +1,6 @@
 export async function fetchGraphQL(query, variables = {}) {
   try {
-    const response = await fetch('http://cms.ccc.clubcricketofchicago.com/api', {
+    const response = await fetch('https://cms.ccc.clubcricketofchicago.com/api', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
