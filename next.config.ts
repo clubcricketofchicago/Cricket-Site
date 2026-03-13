@@ -16,14 +16,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  swcMinify: true,
-  webpack: (config) => {
-    config.optimization.minimize = true;
-    return config;
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  turbopack: {},
 };
 
 export default nextConfig;
