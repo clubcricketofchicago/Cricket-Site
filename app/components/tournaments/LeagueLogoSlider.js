@@ -20,7 +20,7 @@ export default function LeagueLogoSlider({ flagImage }) {
       <div className="leagueLogo_slider flex_grid">
         <div
           className="newleague_logo_ele aspect-[750/960]"
-          style={{ backgroundImage: `url("${backgroundFlag}")` }}
+         style={{ backgroundImage: `url(${backgroundFlag})` }}
         >
           {/* If you want to reintroduce these sections, uncomment them and replace with real data
           

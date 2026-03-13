@@ -167,7 +167,7 @@ export default function MeetSquad({ data }) {
           <div className="MS_logo_content_parent flex_grid">
             <div
               className="bg_eagle_logo"
-              style={{ backgroundImage: 'url("/images/ccc-logo 3.png")' }}
+              style={{ backgroundImage: "url(/images/ccc-logo3.png)" }}
             ></div>
 
             <div className="player_content">

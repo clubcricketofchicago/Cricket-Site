@@ -43,7 +43,7 @@ export default function PlayerOfTheWeek({
           </div>
           <div
             className="POTW_ele POTW_bestBatsman"
-            style={{ backgroundImage: `url('${batterImg}')` }}
+            style={{ backgroundImage: `url("${batterImg}")` }}
           ></div>
           <div className="POTW_text_overlay">
             <p className="POTW_playerName white_color h4 uppercase oswald-bold">
@@ -68,7 +68,7 @@ export default function PlayerOfTheWeek({
           </div>
           <div
             className="POTW_ele POTW_bestBowler"
-            style={{ backgroundImage: `url('${bowlerImg}')` }}
+            style={{ backgroundImage: `url("${bowlerImg}")` }}
           ></div>
           <div className="POTW_text_overlay">
             <p className="POTW_playerName white_color h4 uppercase oswald-bold">

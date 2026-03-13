@@ -9,7 +9,7 @@
      /* Optional: adds space between the outline and the element */
 }
 
-@theme inline {
+:root {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -129,7 +129,7 @@ body {
 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-image: url('../public/images/backgroundBg.jpg');
+  background-image: url("/images/backgroundBg.jpg");
 
   background-size: 100%;
   background-repeat:repeat-y;
@@ -659,10 +659,7 @@ header.main_header button.nav_ele_btn
     transition:all ease 0.8s;
     cursor: pointer;
 }
-button.nav_ele_btn p 
-{
-    
-}
+
 header.main_header.active_header button.nav_ele_btn
 {
     background-color: #FA4616;
@@ -681,16 +678,9 @@ div.nav_ele_text
     margin-bottom: auto;
     white-space: nowrap;
     cursor: pointer;
-    text:black;
+    color: #000000;
 }
-div.nav_ele_text a 
-{
-    
-}
-button.nav_ele_btn p
-{
-    
-}
+
  img.nav_eleIco 
 {
     width:25px;
@@ -2318,7 +2308,7 @@ div.footer_socialPanel div.social_media_panel
 
 section.join_us_container
 {
-    background-image: url('/images/join_usBg.png');
+    background-image: url("/images/join_usBg.png");
     min-height: 100vh;
     background-repeat: no-repeat;
     background-size: cover;
@@ -2841,7 +2831,7 @@ div.playerCardEle
 {
     width:100%;
     aspect-ratio: 248/388;
-    background-image:url("../public/images/bg-patterns/prism_bg_one.png");
+    background-image:url("/images/bg-patterns/prism_bg_one.png");
     background-size:cover;
     background-repeat: no-repeat;
     display:flex;
@@ -2867,7 +2857,7 @@ div.playerImage
     width: 85%;
    
     margin: 0vw 7.5%;
-    background-image:url("../public/images/bg-patterns/header_bg_one.svg");
+    background-image:url("/images/bg-patterns/header_bg_one.svg");
     background-size: cover;
     background-repeat: no-repeat;
     aspect-ratio: 220/242;
@@ -2894,7 +2884,7 @@ div.playerinfo
     width: 85%;
    
     margin: 0vw 7.5%;
-    background-image:url("../public/images/bg-patterns/body_bg_one.svg");
+    background-image:url("/images/bg-patterns/body_bg_one.svg");
     background-size: cover;
     background-repeat: no-repeat;
     aspect-ratio: 224/106;
@@ -3532,7 +3522,7 @@ p.credsContainer_para
     }
     section.join_us_container
     {
-        background-image: url('../public/images/join_usMobBg.jpg');
+        background-image: url("/images/join_usMobBg.jpg");
     }
     div.UMP_parent_grid 
     {

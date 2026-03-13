@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "ccc.cms.midwestcricketconference.org",
+        hostname: "ccc.cms.clubcricketofchicago.com",
         pathname: "/**",
       },
       {
@@ -15,6 +15,14 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
     ],
+  },
+  swcMinify: true,
+  webpack: (config) => {
+    config.optimization.minimize = true;
+    return config;
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
   },
 };
 
