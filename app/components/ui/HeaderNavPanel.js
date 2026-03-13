@@ -3,8 +3,9 @@
 import LogoContainer from './LogoContainer'
 import Link from 'next/link'
 import { useRef, useEffect, useState } from 'react'
-import { fetchGraphQL } from '/app/lib/graphqlClient'
-import { getNavigationConfig } from '/app/lib/queries/navigationQuery'
+
+import { fetchGraphQL } from '../../lib/graphqlClient'
+import { getNavigationConfig } from '../../lib/queries/navigationQuery'
 import Image from 'next/image'
 
 function NavEleIco({ iconData }) {

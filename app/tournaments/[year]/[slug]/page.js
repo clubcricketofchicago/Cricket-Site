@@ -2,15 +2,16 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter, notFound } from "next/navigation";
-import { fetchGraphQL } from "/app/lib/graphqlClient";
-import { getFixturesByTournamentSlug } from "/app/lib/queries/fixturesByTournament";
-import { getTournamentPageQuery } from "/app/lib/queries/tournamentPageQuery";
 
-import LeagueLogoSlider from "/app/components/tournaments/LeagueLogoSlider";
-import PlayerOfTheWeek from "/app/components/tournaments/PlayerOfTheWeek";
-import LeagueHighlights from "/app/components/tournaments/LeagueHighlights";
-import FixturesAndResults from "/app/components/tournaments/FixturesAndResults";
-import NumberZone from "/app/components/tournaments/NumberZone";
+import { fetchGraphQL } from "../../../lib/graphqlClient";
+import { getFixturesByTournamentSlug } from "../../../lib/queries/fixturesByTournament";
+import { getTournamentPageQuery } from "../../../lib/queries/tournamentPageQuery";
+
+import LeagueLogoSlider from "../../../components/tournaments/LeagueLogoSlider";
+import PlayerOfTheWeek from "../../../components/tournaments/PlayerOfTheWeek";
+import LeagueHighlights from "../../../components/tournaments/LeagueHighlights";
+import FixturesAndResults from "../../../components/tournaments/FixturesAndResults";
+import NumberZone from "../../../components/tournaments/NumberZone";
 import Image from "next/image";
 
 const cmsBaseUrl = process.env.NEXT_PUBLIC_CMS_URL || "";

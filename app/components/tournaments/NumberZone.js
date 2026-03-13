@@ -2,10 +2,10 @@
 
 import React from "react";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
-import RenderBattingDataTable from "/app/components/tournaments/RenderBattingDataTable";
-import RenderBowlingDataTable from "/app/components/tournaments/RenderBowlingDataTable";
-import RenderFieldingDataTable from "/app/components/tournaments/RenderFieldingDataTable";
-import RenderRankingDataTable from "/app/components/tournaments/RenderRankingDataTable";
+import RenderBattingDataTable from "../../components/tournaments/RenderBattingDataTable";
+import RenderBowlingDataTable from "../../components/tournaments/RenderBowlingDataTable";
+import RenderFieldingDataTable from "../../components/tournaments/RenderFieldingDataTable";
+import RenderRankingDataTable from "../../components/tournaments/RenderRankingDataTable";
 
 export default function NumberZone({
   battingNumberZone = [],

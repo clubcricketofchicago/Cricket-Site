@@ -3,11 +3,12 @@
 export const dynamic = 'force-dynamic';
 
 import { useEffect, useState } from 'react';
-import SectionTitleEle from '/app/components/ui/SectionTitleEle';
+import SectionTitleEle from '../components/ui/SectionTitleEle';
+
 import Image from 'next/image';
 import Link from 'next/link';
-import { fetchGraphQL } from '/app/lib/graphqlClient';
-import { getTournamentPageQuery } from '/app/lib/queries/tournamentPageQuery';
+import { fetchGraphQL } from '../lib/graphqlClient';
+import { getTournamentPageQuery } from '../lib/queries/tournamentPageQuery';
 
 const getFullImageUrl = (url) => {
   const cmsBaseUrl = process.env.NEXT_PUBLIC_CMS_URL || 'https://cms-ccc.ddev.site/';

@@ -9,11 +9,11 @@ export default {
   	extend: {
   		fontFamily: {
   			roboto: [
-  				'Roboto Condensed"',
+  				'"Roboto Condensed"',
   				'sans-serif'
   			],
   			oswald: [
-  				'Oswald"',
+  				'"Oswald"',
   				'sans-serif'
   			]
   		},
