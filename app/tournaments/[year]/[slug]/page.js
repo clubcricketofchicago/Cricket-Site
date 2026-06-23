@@ -103,17 +103,14 @@ export default function LeagueStatsContainer() {
 
   const fetchFixturesForTournament = useCallback(
     async (tournament) => {
-      console.log("fetchFixturesForTournament called with tournament slug:", tournament.slug);
       try {
         if (tournament.slug && allFixtures[tournament.slug]) {
-          console.log("Already have fixtures stored for slug:", tournament.slug, allFixtures[tournament.slug]);
           return allFixtures[tournament.slug];
         }
         const res = await fetch(
           `/api/tournaments/fixtures?slug=${encodeURIComponent(tournament.slug)}`
         );
         const fixtureData = await res.json();
-        console.log("Fixtures API response:", fixtureData);
         const tournamentFixtures = (fixtureData && fixtureData.entries.filter(entry => entry.mappedSeries && entry.mappedSeries.length > 0)) || [];
         if (tournament.slug) {
           setAllFixtures((prev) => ({
@@ -132,9 +129,7 @@ export default function LeagueStatsContainer() {
 
   useEffect(() => {
     const { year, slug } = params || {};
-    console.log("Initial data fetch useEffect triggered with params:", params);
     if (!year || !slug) {
-      console.log("Either year or slug is missing; marking error as true.");
       setError(true);
       setLoading(false);
       return;
@@ -143,15 +138,12 @@ export default function LeagueStatsContainer() {
     fetch("/api/tournaments")
       .then((r) => r.json())
       .then(async (data) => {
-        console.log("Tournament page fetch response:", data);
         const allEntries = (data && data.entries) || [];
         const yearTournaments = allEntries.filter(
           (entry) =>
             entry.typeHandle === "tournamentPage" && entry.parent && entry.parent.slug === year
         );
-        console.log("Filtered yearTournaments:", yearTournaments);
         if (yearTournaments.length === 0) {
-          console.log("No tournaments found for given year:", year);
           setError(true);
           setLoading(false);
           return;
@@ -159,22 +151,15 @@ export default function LeagueStatsContainer() {
         setAllTournaments(yearTournaments);
         const currentIndex = yearTournaments.findIndex((entry) => entry.slug === slug);
         if (currentIndex === -1) {
-          console.log("No matching tournament found with slug:", slug);
           setError(true);
           setLoading(false);
           return;
         }
         setCurrentTournamentIndex(currentIndex);
         const currentTournament = yearTournaments[currentIndex];
-        console.log("current Tournament:");
-        console.log(currentTournament);
         setTournamentData(currentTournament);
-        console.log("Current Tournament data:", currentTournament);
         const fetchedFixtures = await fetchFixturesForTournament(currentTournament);
         setFixtures(fetchedFixtures);
-        console.log("Current Tournament Title:", currentTournament.title);
-        console.log("Fixtures Data:", fetchedFixtures);
-        console.log("Results Data:", currentTournament.resultCards || []);
         setLoading(false);
       })
       .catch((e) => {
@@ -185,15 +170,11 @@ export default function LeagueStatsContainer() {
   }, [params, fetchFixturesForTournament]);
 
   const goToPrevTournament = useCallback(async () => {
-    console.log("goToPrevTournament called");
     if (allTournaments.length <= 1) {
-      console.log("There is only one tournament or none. Aborting prev nav.");
       return;
     }
     const newIndex = (currentTournamentIndex - 1 + allTournaments.length) % allTournaments.length;
     const prevTournament = allTournaments[newIndex];
-    console.log("Navigating to previous tournament index:", newIndex);
-    console.log("Previous tournament slug:", prevTournament.slug);
     setCurrentTournamentIndex(newIndex);
     setTournamentData(prevTournament);
     const { year } = params;
@@ -202,21 +183,14 @@ export default function LeagueStatsContainer() {
     }
     const fetchedFixtures = await fetchFixturesForTournament(prevTournament);
     setFixtures(fetchedFixtures);
-    console.log("Previous Tournament:", prevTournament.title);
-    console.log("Updated Fixtures Data:", fetchedFixtures);
-    console.log("Updated Results Data:", prevTournament.resultCards || []);
   }, [allTournaments, currentTournamentIndex, params, router, fetchFixturesForTournament]);
 
   const goToNextTournament = useCallback(async () => {
-    console.log("goToNextTournament called");
     if (allTournaments.length <= 1) {
-      console.log("There is only one tournament or none. Aborting next nav.");
       return;
     }
     const newIndex = (currentTournamentIndex + 1) % allTournaments.length;
     const nextTournament = allTournaments[newIndex];
-    console.log("Navigating to next tournament index:", newIndex);
-    console.log("Next tournament slug:", nextTournament.slug);
     setCurrentTournamentIndex(newIndex);
     setTournamentData(nextTournament);
     const { year } = params;
@@ -225,9 +199,6 @@ export default function LeagueStatsContainer() {
     }
     const fetchedFixtures = await fetchFixturesForTournament(nextTournament);
     setFixtures(fetchedFixtures);
-    console.log("Next Tournament:", nextTournament.title);
-    console.log("Updated Fixtures Data:", fetchedFixtures);
-    console.log("Updated Results Data:", nextTournament.resultCards || []);
   }, [allTournaments, currentTournamentIndex, params, router, fetchFixturesForTournament]);
 
   if (loading) {
@@ -238,7 +209,6 @@ export default function LeagueStatsContainer() {
     );
   }
   if (error || !tournamentData) {
-    console.log("Error or missing tournamentData; rendering notFound().");
     return notFound();
   }
 

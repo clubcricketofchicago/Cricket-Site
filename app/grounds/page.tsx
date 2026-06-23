@@ -264,7 +264,6 @@ export default function GroundSlider() {
         const data = await fetchGraphQL(query)
 
         if (data && data.entries) {
-          console.log('GraphQL Grounds data:', data.entries)
           setGroundsData(data.entries)
         } else {
           throw new Error('No grounds data returned from API')

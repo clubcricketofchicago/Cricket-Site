@@ -12,8 +12,6 @@ const getFullImageUrl = (url) => {
 };
 
 function PlayerCard({ player }) {
-  console.log("PLAYER CARD DATA:")
-  console.log(player);
   
   const name = player.playerName || "Unknown Player";
   const profilePic = getFullImageUrl(player.image[0]?.url || "/images/player_sample_image.png");

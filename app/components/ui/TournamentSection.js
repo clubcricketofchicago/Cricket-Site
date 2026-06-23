@@ -1,12 +1,11 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import SectionTitleEle from './SectionTitleEle'
 
 function TopPlayers({ tournament }) {
-  console.log(tournament);
   if (!tournament || !tournament.topPlayers || tournament.topPlayers.length === 0) {
     return (
       <div className="LT_gridEle LT_fixtures_results_tabs_parent">
@@ -192,7 +191,6 @@ function LeagueLogo({ tournament }) {
 }
 
 function LeagueInfo({ leagueStats }) {
-  console.log(leagueStats)
   const safeStats = Array.isArray(leagueStats) ? leagueStats : []
   
   // Only take the first 3 elements
@@ -217,15 +215,6 @@ export default function TournamentSection({ data }) {
   const currentTournament = useMemo(() => {
     return tournaments[currentIndex] || {}
   }, [tournaments, currentIndex])
-  //console.log(currentTournament);
-  useEffect(() => {
-    if (tournaments.length > 0) {
-      console.log(
-        `Showing tournament ${currentIndex + 1}/${tournaments.length}: ${currentTournament.title || 'Unknown'}`
-      )
-    }
-  }, [currentIndex, currentTournament, tournaments.length])
-
   if (!data || !data.tournamentsEntries || data.tournamentsEntries.length === 0) {
     return null
   }

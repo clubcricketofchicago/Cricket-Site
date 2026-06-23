@@ -41,8 +41,6 @@ export default function DateCalendar({ matches: rawMatches }: DateCalendarProps)
     return rawMatches.entries;
   }, [rawMatches]);
 
-  console.log('Raw matches received:', rawMatches);
-  console.log('Match entries extracted:', matchEntries);
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -51,23 +49,14 @@ export default function DateCalendar({ matches: rawMatches }: DateCalendarProps)
   const matchesByDate = useMemo(() => {
     const map: Record<string, MatchItem> = {};
 
-    console.log(`Processing ${matchEntries.length} match entries`);
 
     for (const match of matchEntries) {
       if (!match || !match.date) {
-        console.log('Skipping match with no date:', match);
         continue;
       }
       try {
         const matchDate = parseISO(match.date);
         const dateKey = format(matchDate, 'yyyy-MM-dd');
-        console.log('Processing match:', {
-          id: match.id,
-          title: match.title,
-          date: match.date,
-          parsedDate: matchDate.toString(),
-          formattedDate: dateKey,
-        });
 
         if (!map[dateKey]) {
           // Only take the first match for that date
@@ -78,7 +67,6 @@ export default function DateCalendar({ matches: rawMatches }: DateCalendarProps)
       }
     }
 
-    console.log('Matches by date map:', map);
     return map;
   }, [matchEntries]);
 
@@ -178,7 +166,6 @@ export default function DateCalendar({ matches: rawMatches }: DateCalendarProps)
                 const matchForThisDay = getMatchForDate(day);
 
                 if (matchForThisDay) {
-                  console.log(`Found match for ${dayKey}:`, matchForThisDay);
                 }
 
                 let vsTeamName: string | null = null;

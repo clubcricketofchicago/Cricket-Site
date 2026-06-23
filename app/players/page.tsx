@@ -113,7 +113,6 @@ function PlayerCardEle({
     : '/images/sample_player_image.png'
 
   const bottomBgImage = getInfoBgImage(player.scorebycaptain || 0)
-  { console.log('Player runs:', player) }
 
   interface ApiError {
     error: string;

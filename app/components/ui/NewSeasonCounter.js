@@ -5,7 +5,6 @@ import TimeCounter from './TimeCounter'
 import { motion, useScroll, useTransform } from 'framer-motion'
 
 export default function NewSeasonCounter({ data }) {
-  console.log('data:', data)
   const { title, counterDate, CTA, convertedCTA, convertedHyperlink, CMTextArea } = data
 
   const { scrollY } = useScroll()

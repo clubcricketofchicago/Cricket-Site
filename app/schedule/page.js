@@ -17,7 +17,6 @@ export default function Page() {
     fetch("/api/schedule")
       .then((r) => r.json())
       .then((data) => {
-        console.log("Calendar API response:", data);
         setMatches(data);
         setLoading(false);
       })

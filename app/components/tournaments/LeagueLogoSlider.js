@@ -13,14 +13,20 @@ export default function LeagueLogoSlider({ flagImage }) {
     return `${baseUrl}${cleanUrl}`;
   };
 
-  const backgroundFlag = getFullImageUrl(flagImage) || "/images/sample_series_flag.png";
+  // CricClubs has no per-series flag, so fall back to the CCC crest.
+  const backgroundFlag = getFullImageUrl(flagImage) || "/images/logo.png";
 
   return (
     <div className="league_logo_slider">
       <div className="leagueLogo_slider flex_grid">
         <div
           className="newleague_logo_ele aspect-[750/960]"
-         style={{ backgroundImage: `url(${backgroundFlag})` }}
+          style={{
+            backgroundImage: `url(${backgroundFlag})`,
+            backgroundSize: "contain",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center",
+          }}
         >
           {/* If you want to reintroduce these sections, uncomment them and replace with real data
           

@@ -27,7 +27,6 @@ const HomePageContent = () => {
     const query = getHomePageQuery();
     fetchGraphQL(query)
       .then((data) => {
-        console.log("GraphQL API response:", data);
         setPageData(data);
       })
       .catch((err) => {

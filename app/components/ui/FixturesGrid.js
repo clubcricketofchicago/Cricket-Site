@@ -19,7 +19,6 @@ export default function FixturesGrid({ data }) {
   }
 
   const fixtures = data.fixturesEntries;
-  console.log("fixtures Length:", fixtures.length);
 
   // Functions to manually call slidePrev/slideNext on the Swiper
   const handlePrev = () => {

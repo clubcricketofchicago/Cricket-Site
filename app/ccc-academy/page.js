@@ -23,7 +23,6 @@ const AcademyPageContent = () => {
     const query = getCCCAcademyQuery()
     fetchGraphQL(query)
       .then((data) => {
-        console.log('GraphQL API response:', data)
         setPageData(data)
         setLoading(false)
       })
