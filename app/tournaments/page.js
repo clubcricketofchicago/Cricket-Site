@@ -7,8 +7,7 @@ import SectionTitleEle from '../components/ui/SectionTitleEle';
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { fetchGraphQL } from '../lib/graphqlClient';
-import { getTournamentPageQuery } from '../lib/queries/tournamentPageQuery';
+// Tournaments list now comes from the local DB (Neon) via /api/tournaments (includes 2026).
 
 const getFullImageUrl = (url) => {
   const cmsBaseUrl = process.env.NEXT_PUBLIC_CMS_URL || 'https://cms-ccc.ddev.site/';
@@ -27,7 +26,7 @@ function SeriesCard({ imageUrl, seriesName, hyperLink }) {
           src={imageUrl}
           width={750}
           height={960}
-          className="w-full h-auto"
+          className="w-full h-auto object-contain"
           alt={`${seriesName} Flag Image`}
           unoptimized
         />
@@ -44,8 +43,8 @@ export default function Page() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const query = getTournamentPageQuery();
-    fetchGraphQL(query)
+    fetch('/api/tournaments')
+      .then((r) => r.json())
       .then((data) => {
         if (!data?.entries) return;
 
@@ -94,7 +93,7 @@ export default function Page() {
                   {group.tournaments.map((tournament) => (
                     <SeriesCard
                       key={tournament.id}
-                      imageUrl={tournament.flagImage[0]?.url ? getFullImageUrl(tournament.flagImage[0]?.url) : '/images/sample_series_flag.png'}
+                      imageUrl={tournament.flagImage[0]?.url ? getFullImageUrl(tournament.flagImage[0]?.url) : '/images/logo.png'}
                       seriesName={tournament.title}
                       hyperLink={`/tournaments/${group.yearSlug}/${tournament.slug}`}
                     />
