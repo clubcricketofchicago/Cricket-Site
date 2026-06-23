@@ -1,0 +1,255 @@
+// Prisma schema for the Cricket-Site CricClubs data mirror.
+// Data is synced FROM the CricClubs core API (clubId 63 = Midwest Cricket Conference,
+// where Club Cricket of Chicago competes). See docs/DATA_LAYER.md.
+//
+// Design: this is a read-mostly MIRROR of an external source, so cross-table foreign
+// keys are intentionally NOT enforced (the source owns referential integrity). Tables
+// use the CricClubs natural IDs as primary keys so every sync is an idempotent upsert.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// A series = a CricClubs "tournament". Has a parent/child hierarchy:
+/// a season (e.g. "Summer 2026", id 359) is the parent of its divisions
+/// (e.g. "Blast T20" 362). The website's /tournaments/{year}/{slug} uses seriesId as slug.
+model Series {
+  id             Int       @id // CricClubs seriesID
+  name           String
+  type           String? // seriesType e.g. "One Day", "Twenty20"
+  year           String?
+  level          String?
+  parentSeriesId Int?      @map("parent_series_id")
+  startDate      DateTime? @map("start_date")
+  syncedAt       DateTime  @default(now()) @updatedAt @map("synced_at")
+
+  @@index([year])
+  @@index([parentSeriesId])
+  @@map("series")
+}
+
+model Team {
+  id              Int      @id // CricClubs teamID
+  name            String
+  code            String?
+  logoPath        String?  @map("logo_path")
+  captainId       Int?     @map("captain_id")
+  captainName     String?  @map("captain_name")
+  viceCaptainId   Int?     @map("vice_captain_id")
+  viceCaptainName String?  @map("vice_captain_name")
+  groupNo         Int?     @map("group_no")
+  syncedAt        DateTime @default(now()) @updatedAt @map("synced_at")
+
+  @@map("teams")
+}
+
+model Player {
+  id           Int      @id // CricClubs playerID
+  firstName    String?  @map("first_name")
+  lastName     String?  @map("last_name")
+  profilePic   String?  @map("profile_pic")
+  playingRole  String?  @map("playing_role")
+  // Optional bio fields from /user/getUserDetails (populated lazily)
+  dateOfBirth  String?  @map("date_of_birth")
+  battingStyle String?  @map("batting_style")
+  bowlingStyle String?  @map("bowling_style")
+  age          Int?
+  syncedAt     DateTime @default(now()) @updatedAt @map("synced_at")
+
+  @@map("players")
+}
+
+/// Which players belong to a team (current squad), from /team/getTeamPlayers.
+model TeamRoster {
+  teamId       Int      @map("team_id")
+  playerId     Int      @map("player_id")
+  jerseyNumber String?  @map("jersey_number")
+  role         String?
+  syncedAt     DateTime @default(now()) @updatedAt @map("synced_at")
+
+  @@id([teamId, playerId])
+  @@index([playerId])
+  @@map("team_rosters")
+}
+
+/// Upcoming/scheduled matches, from /match/getSchedule. matchId is 0 until played,
+/// then links to a Match row.
+model Fixture {
+  id             Int       @id // fixtureId
+  seriesId       Int       @map("series_id")
+  seriesName     String?   @map("series_name")
+  teamOneId      Int?      @map("team_one_id")
+  teamTwoId      Int?      @map("team_two_id")
+  teamOneName    String?   @map("team_one_name")
+  teamTwoName    String?   @map("team_two_name")
+  teamOneLogo    String?   @map("team_one_logo")
+  teamTwoLogo    String?   @map("team_two_logo")
+  matchId        Int       @default(0) @map("match_id")
+  matchType      String?   @map("match_type")
+  date           String? // fixedFormatDate "YYYY-MM-DD"
+  time           String?
+  day            String?
+  groundId       Int?      @map("ground_id")
+  location       String?
+  googleMapsLink String?   @map("google_maps_link")
+  statusDesc     String?   @map("status_desc")
+  matchDateTime  DateTime? @map("match_datetime")
+  syncedAt       DateTime  @default(now()) @updatedAt @map("synced_at")
+
+  @@index([seriesId])
+  @@index([date])
+  @@map("fixtures")
+}
+
+/// Completed/in-progress match results, from /match/getMatches.
+model Match {
+  id             Int       @id // matchId
+  seriesId       Int       @map("series_id")
+  seriesName     String?   @map("series_name")
+  clubId         Int?      @map("club_id")
+  teamOneId      Int?      @map("team_one_id")
+  teamTwoId      Int?      @map("team_two_id")
+  teamOneName    String?   @map("team_one_name")
+  teamTwoName    String?   @map("team_two_name")
+  teamOneCode    String?   @map("team_one_code")
+  teamTwoCode    String?   @map("team_two_code")
+  teamOneLogo    String?   @map("team_one_logo")
+  teamTwoLogo    String?   @map("team_two_logo")
+  overs          Int?
+  t1Total        Int?      @map("t1_total")
+  t1Wickets      Int?      @map("t1_wickets")
+  t1Balls        Int?      @map("t1_balls")
+  t2Total        Int?      @map("t2_total")
+  t2Wickets      Int?      @map("t2_wickets")
+  t2Balls        Int?      @map("t2_balls")
+  isComplete     Boolean   @default(false) @map("is_complete")
+  status         String?
+  result         String?
+  winner         Int?
+  matchDate      String?   @map("match_date")
+  location       String?
+  liveStreamLink String?   @map("live_stream_link")
+  lastUpdated    DateTime? @map("last_updated")
+  syncedAt       DateTime  @default(now()) @updatedAt @map("synced_at")
+
+  @@index([seriesId])
+  @@map("matches")
+}
+
+/// Points table per series, from /team/getPointsTable.
+model Standing {
+  seriesId   Int      @map("series_id")
+  teamId     Int      @map("team_id")
+  groupName  String?  @map("group_name")
+  teamName   String?  @map("team_name")
+  teamCode   String?  @map("team_code")
+  teamLogo   String?  @map("team_logo")
+  matches    Int      @default(0)
+  won        Int      @default(0)
+  lost       Int      @default(0)
+  tied       Int      @default(0)
+  noResult   Int      @default(0) @map("no_result")
+  points     Float    @default(0)
+  netRunRate Float?   @map("net_run_rate")
+  runsScored Int?     @map("runs_scored")
+  runsGiven  Int?     @map("runs_given")
+  syncedAt   DateTime @default(now()) @updatedAt @map("synced_at")
+
+  @@id([seriesId, teamId])
+  @@map("standings")
+}
+
+/// Per-series batting leaderboard ("Number Zone"), from /stats/getBattingStats.
+model PlayerBattingStat {
+  seriesId     Int      @map("series_id")
+  playerId     Int      @map("player_id")
+  teamId       Int?     @map("team_id")
+  firstName    String?  @map("first_name")
+  lastName     String?  @map("last_name")
+  teamName     String?  @map("team_name")
+  profilePic   String?  @map("profile_pic")
+  matches      Int      @default(0)
+  innings      Int      @default(0)
+  notOuts      Int      @default(0) @map("not_outs")
+  runs         Int      @default(0)
+  balls        Int      @default(0)
+  fours        Int      @default(0)
+  sixes        Int      @default(0)
+  fifties      Int      @default(0)
+  hundreds     Int      @default(0)
+  highestScore Int?     @map("highest_score")
+  points       Float?
+  syncedAt     DateTime @default(now()) @updatedAt @map("synced_at")
+
+  @@id([seriesId, playerId])
+  @@map("player_batting_stats")
+}
+
+/// Per-series bowling leaderboard, from /stats/getBowlingStats.
+model PlayerBowlingStat {
+  seriesId    Int      @map("series_id")
+  playerId    Int      @map("player_id")
+  teamId      Int?     @map("team_id")
+  firstName   String?  @map("first_name")
+  lastName    String?  @map("last_name")
+  teamName    String?  @map("team_name")
+  profilePic  String?  @map("profile_pic")
+  matches     Int      @default(0)
+  innings     Int      @default(0)
+  balls       Int      @default(0)
+  runs        Int      @default(0)
+  wickets     Int      @default(0)
+  fourWickets Int      @default(0) @map("four_wickets")
+  fiveWickets Int      @default(0) @map("five_wickets")
+  maidens     Int      @default(0)
+  dotBalls    Int      @default(0) @map("dot_balls")
+  wides       Int      @default(0)
+  noBalls     Int      @default(0) @map("no_balls")
+  hattricks   Int      @default(0)
+  economy     Float?
+  points      Float?
+  syncedAt    DateTime @default(now()) @updatedAt @map("synced_at")
+
+  @@id([seriesId, playerId])
+  @@map("player_bowling_stats")
+}
+
+/// Per-series fielding leaderboard, from /stats/getFeildingStats (API spelling).
+model PlayerFieldingStat {
+  seriesId        Int      @map("series_id")
+  playerId        Int      @map("player_id")
+  teamId          Int?     @map("team_id")
+  firstName       String?  @map("first_name")
+  lastName        String?  @map("last_name")
+  teamName        String?  @map("team_name")
+  profilePic      String?  @map("profile_pic")
+  matches         Int      @default(0)
+  catches         Int      @default(0)
+  wkCatches       Int      @default(0) @map("wk_catches")
+  directRunOuts   Int      @default(0) @map("direct_run_outs")
+  indirectRunOuts Int      @default(0) @map("indirect_run_outs")
+  stumpings       Int      @default(0)
+  total           Int      @default(0)
+  points          Float?
+  syncedAt        DateTime @default(now()) @updatedAt @map("synced_at")
+
+  @@id([seriesId, playerId])
+  @@map("player_fielding_stats")
+}
+
+/// Bookkeeping: last sync time/status per entity, for monitoring & staleness checks.
+model SyncState {
+  entity       String    @id
+  lastSyncedAt DateTime? @map("last_synced_at")
+  lastStatus   String?   @map("last_status")
+  lastError    String?   @map("last_error")
+  itemCount    Int?      @map("item_count")
+  durationMs   Int?      @map("duration_ms")
+
+  @@map("sync_state")
+}

@@ -6,9 +6,17 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "prisma generate",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio",
+    "sync": "tsx scripts/sync.ts",
+    "cricclubs:smoke": "tsx scripts/cricclubs-smoke.ts"
   },
   "dependencies": {
+    "@prisma/client": "^6.5.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-popover": "^1.1.15",
     "@swup/fade-theme": "^2.0.1",
@@ -38,10 +46,13 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.0.0",
+    "dotenv": "^16.4.5",
     "eslint": "^9",
     "eslint-config-next": "15.2.3",
     "postcss": "^8.0.0",
+    "prisma": "^6.5.0",
     "tailwindcss": "^3.0.0",
+    "tsx": "^4.19.2",
     "typescript": "^5"
   }
 }
