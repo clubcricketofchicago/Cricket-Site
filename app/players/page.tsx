@@ -6,9 +6,9 @@ export const dynamic = 'force-dynamic';
 import Image from 'next/image'
 import SectionTitleEle from '../components/ui/SectionTitleEle'
 import { useEffect, useState } from 'react'
-import { fetchGraphQL } from '../lib/graphqlClient'
-import { getPlayersQuery } from '../lib/queries/playersQuery'
-import { getPlayerConfiguration } from '../lib/queries/playerConfigurationQuery'
+// Roster now comes from the local DB (Neon) via /api/players (CCC's squad), shaped
+// like the old CMS player payload. The "Show Full Stats" modal still uses the live
+// CricClubs career stats via /api/player-stats.
 
 // ------------------------------------
 // Define interfaces for typed data
@@ -90,9 +90,8 @@ function getFullImageUrl(url: string) {
   return `${baseUrl}${cleanUrl}`
 }
 
-function getInfoBgImage(score: number) {
-  if (score <= 3) return '/images/players/bronze_infoBG.png'
-  if (score <= 6) return '/images/players/silver_infoBG.png'
+function getInfoBgImage(_score: number) {
+  // Uniform card style for every player (gold/silver/bronze tier removed).
   return '/images/players/gold_infoBG.png'
 }
 
@@ -173,9 +172,6 @@ function PlayerCardEle({
         <div className="absolute w-[16vw] h-[35.5vh] lg:w-[3.5%] lg:h-[14.6vw] ml-[0.2vw] mt-[-0.2vw]">
           <div className="flex h-full">
             <div className="mt-auto h-[74%] justify-between flex flex-col">
-              <p className="text-center roboto-condensed-bold h3 text-[#D2A357]">
-                {player.scorebycaptain}
-              </p>
               <div className="w-[80%] mx-auto">
                 <Image
                   src={flagUrl}
@@ -396,14 +392,8 @@ export default function Page() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Use the typed interfaces to cast the responses
-        const [playersData, configData]: [
-          GraphQLPlayersResponse,
-          PlayerConfigurationResponse
-        ] = await Promise.all([
-          fetchGraphQL(getPlayersQuery()) as Promise<GraphQLPlayersResponse>,
-          fetchGraphQL(getPlayerConfiguration()) as Promise<PlayerConfigurationResponse>,
-        ])
+        const res = await fetch('/api/players')
+        const playersData: GraphQLPlayersResponse = await res.json()
 
         if (playersData && playersData.entries) {
           setPlayers(playersData.entries)
@@ -411,11 +401,8 @@ export default function Page() {
           throw new Error('No player data returned from API')
         }
 
-        if (configData && configData.globalSet) {
-          setLightswitch(!!configData.globalSet.lightswitch)
-        } else {
-          throw new Error('No configuration data returned from API')
-        }
+        // Show stats (matches/runs/wickets) for everyone, uniformly.
+        setLightswitch(false)
       } catch (err) {
         console.error('Error fetching data:', err)
       }
