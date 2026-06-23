@@ -251,6 +251,7 @@ export async function syncBowlingStats(seriesId: number): Promise<number> {
       balls: num(b.balls),
       runs: num(b.runs),
       wickets: num(b.wickets),
+      catches: num(b.catches),
       fourWickets: num(b.fourWickets),
       fiveWickets: num(b.fiveWickets),
       maidens: num(b.maidens),

@@ -163,6 +163,7 @@ export interface RawBowlingStat {
   balls?: number;
   runs?: number;
   wickets?: number;
+  catches?: number;
   fourWickets?: number;
   fiveWickets?: number;
   maidens?: number;

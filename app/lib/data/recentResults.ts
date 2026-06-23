@@ -1,0 +1,61 @@
+// Server-side: Club Cricket of Chicago's most recent completed matches, from the DB.
+// Used by the home "Recent Results" widget. Scores/result are from CCC's perspective.
+
+import { prisma } from "../db/prisma";
+
+const IMG = "https://media.cricclubs.com";
+const img = (p?: string | null) =>
+  p ? `${IMG}${p.startsWith("/") ? p : `/${p}`}` : "";
+const CCC_NAME = "Club Cricket of Chicago";
+
+export interface RecentResult {
+  id: number;
+  seriesName: string;
+  date: string;
+  opponentName: string;
+  opponentLogo: string;
+  cccLogo: string;
+  cccScore: string;
+  oppScore: string;
+  cccWon: boolean;
+  result: string;
+}
+
+export async function getRecentResults(limit = 6): Promise<RecentResult[]> {
+  const candidates = await prisma.match.findMany({
+    where: {
+      isComplete: true,
+      OR: [{ teamOneName: CCC_NAME }, { teamTwoName: CCC_NAME }],
+      NOT: { result: { contains: "Abandon", mode: "insensitive" } },
+    },
+    orderBy: [{ lastUpdated: "desc" }, { id: "desc" }],
+    take: limit * 4,
+  });
+
+  // Drop matches with no real scoreline (e.g. forfeits recorded as 0/0).
+  const matches = candidates
+    .filter((m) => (m.t1Total ?? 0) > 0 || (m.t2Total ?? 0) > 0)
+    .slice(0, limit);
+
+  return matches.map((m) => {
+    const cccIsT1 = m.teamOneName === CCC_NAME;
+    const score = (t: number | null, w: number | null) => `${t ?? 0}/${w ?? 0}`;
+    const cccWon =
+      m.winner != null &&
+      ((cccIsT1 && m.winner === m.teamOneId) ||
+        (!cccIsT1 && m.winner === m.teamTwoId));
+
+    return {
+      id: m.id,
+      seriesName: m.seriesName ?? "",
+      date: m.matchDate ?? "",
+      opponentName: (cccIsT1 ? m.teamTwoName : m.teamOneName) ?? "TBD",
+      opponentLogo: img(cccIsT1 ? m.teamTwoLogo : m.teamOneLogo),
+      cccLogo: img(cccIsT1 ? m.teamOneLogo : m.teamTwoLogo),
+      cccScore: cccIsT1 ? score(m.t1Total, m.t1Wickets) : score(m.t2Total, m.t2Wickets),
+      oppScore: cccIsT1 ? score(m.t2Total, m.t2Wickets) : score(m.t1Total, m.t1Wickets),
+      cccWon,
+      result: m.result ?? "",
+    };
+  });
+}

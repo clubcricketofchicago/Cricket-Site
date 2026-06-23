@@ -7,6 +7,7 @@ import { TRACKED_SERIES } from "../cricclubs/config";
 
 const TABLE_LIMIT = 25; // rows shown per Number Zone leaderboard
 const IMG = "https://media.cricclubs.com";
+const CCC_NAME = "Club Cricket of Chicago";
 
 const img = (p?: string | null) =>
   p ? `${IMG}${p.startsWith("/") ? p : `/${p}`}` : "";
@@ -108,11 +109,20 @@ async function buildDetail(series: { id: number; name: string; year: string }) {
     playerPosition: "Batsman",
   }));
 
+  // Win/loss colour from Club Cricket of Chicago's perspective (CCC's teamId differs
+  // per series, so match by name). Non-CCC matches fall back to team-one.
+  const cccWon = (m: (typeof matches)[number]) => {
+    if (m.winner == null) return false;
+    if (m.teamOneName === CCC_NAME) return m.winner === m.teamOneId;
+    if (m.teamTwoName === CCC_NAME) return m.winner === m.teamTwoId;
+    return m.winner === m.teamOneId;
+  };
+
   // resultCards -> ResultItem[]
   const resultCards = matches.map((m) => ({
     id: m.id,
     title: m.result ?? "",
-    lightswitch: m.winner != null && m.winner === m.teamOneId,
+    lightswitch: cccWon(m),
     date: m.matchDate ?? "",
     t1Score: `${m.t1Total ?? 0}/${m.t1Wickets ?? 0}`,
     t1Overs: oversFromBalls(m.t1Balls),
@@ -144,7 +154,7 @@ async function buildDetail(series: { id: number; name: string; year: string }) {
     runs: b.runs,
     wkts: b.wickets,
     pts: b.points ?? 0,
-    cths: 0, // catches-by-bowler not stored on bowling stat; shown as 0 for now
+    cths: b.catches,
     fourW: b.fourWickets,
     fiveW: b.fiveWickets,
     db: b.dotBalls,

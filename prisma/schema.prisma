@@ -205,6 +205,7 @@ model PlayerBowlingStat {
   balls       Int      @default(0)
   runs        Int      @default(0)
   wickets     Int      @default(0)
+  catches     Int      @default(0)
   fourWickets Int      @default(0) @map("four_wickets")
   fiveWickets Int      @default(0) @map("five_wickets")
   maidens     Int      @default(0)

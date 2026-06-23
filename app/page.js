@@ -2,8 +2,9 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, Fragment } from "react";
 import HeroBanner from "./components/ui/HeroBanner";
+import RecentResults from "./components/ui/RecentResults";
 import NewSeasonCounter from "./components/ui/NewSeasonCounter";
 import MeetSquad from "./components/ui/MeetSquad";
 import BGParralaxBanner from "./components/ui/BGParralaxBanner";
@@ -18,8 +19,9 @@ import HeroBannerSkeleton from "./components/skeletons/HeroBannerSkeleton";
 const HomePageContent = () => {
   const [pageData, setPageData] = useState(null);
   const [error, setError] = useState(null);
-  // Upcoming fixtures come from the local DB (Neon); editorial blocks stay on the CMS.
+  // Upcoming fixtures + recent results come from the local DB (Neon); editorial stays on the CMS.
   const [dbFixtures, setDbFixtures] = useState(null);
+  const [recentResults, setRecentResults] = useState(null);
 
   useEffect(() => {
     const query = getHomePageQuery();
@@ -37,6 +39,11 @@ const HomePageContent = () => {
       .then((r) => r.json())
       .then((d) => setDbFixtures(d.entries || []))
       .catch(() => setDbFixtures([]));
+
+    fetch("/api/recent-results")
+      .then((r) => r.json())
+      .then((d) => setRecentResults(d.results || []))
+      .catch(() => setRecentResults([]));
   }, []);
 
   if (error) {
@@ -69,13 +76,15 @@ const HomePageContent = () => {
           );
         case "fixturesGrid":
           return (
-            <FixturesGrid
-              key={block.id}
-              data={{
-                ...block,
-                fixturesEntries: dbFixtures ?? block.fixturesEntries,
-              }}
-            />
+            <Fragment key={block.id}>
+              <FixturesGrid
+                data={{
+                  ...block,
+                  fixturesEntries: dbFixtures ?? block.fixturesEntries,
+                }}
+              />
+              <RecentResults results={recentResults ?? []} />
+            </Fragment>
           );
         case "tournamentSection":
           return <TournamentSection key={block.id} data={block} />;

@@ -65,7 +65,8 @@ export async function getPlayerEntries(): Promise<{ entries: Entry[] }> {
   const entries: Entry[] = players.map((p) => ({
     id: String(p.id),
     title: fullName(p.firstName, p.lastName),
-    country: "",
+    // CricClubs exposes no nationality, so default everyone to the Indian flag (in.svg).
+    country: "in",
     teamName: "Club Cricket of Chicago",
     playerImage: [{ url: img(p.profilePic) }],
     nationalFlag: [],
