@@ -5,8 +5,8 @@ export const dynamic = 'force-dynamic';
 import { useEffect, useState, Suspense } from "react";
 import UpcomingMatchPanel from "../components/calendar/UpcomingMatchPanel";
 import DateCalendar from "../components/calendar/DateCalendar";
-import { fetchGraphQL } from "../lib/graphqlClient";
-import { getCalendarQuery } from "../lib/queries/calendarQuery";
+// Calendar data now comes from the local DB (Neon) via /api/schedule (CCC's fixtures),
+// shaped like the old CMS fixture payload.
 
 export default function Page() {
   const [loading, setLoading] = useState(true);
@@ -14,9 +14,8 @@ export default function Page() {
   const [matches, setMatches] = useState(null);
 
   useEffect(() => {
-    const query = getCalendarQuery();
-
-    fetchGraphQL(query)
+    fetch("/api/schedule")
+      .then((r) => r.json())
       .then((data) => {
         console.log("Calendar API response:", data);
         setMatches(data);
