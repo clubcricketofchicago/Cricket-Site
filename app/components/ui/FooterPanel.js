@@ -9,12 +9,12 @@ const SOCIAL_LINKS = [
   { href: 'https://twitter.com', icon: 'TwitterLogoWhite.svg', alt: 'Twitter' },
   { href: 'https://instagram.com', icon: 'InstagramIconWhite.svg', alt: 'Instagram' },
   { href: 'https://facebook.com', icon: 'FacebookiconWhite.svg', alt: 'Facebook' },
-  { href: 'https://youtube.com', icon: 'YoutubeLogoWhite.svg', alt: 'YouTube' },
+  { href: 'https://www.youtube.com/channel/UClH02lUKHkbEsWTlvBtNCkQ', icon: 'YoutubeLogoWhite.svg', alt: 'YouTube' },
 ]
 
 // Navigation links
 const FOOTER_LINKS = [
-  { href: '/calendar', label: 'Schedule' },
+  { href: '/schedule', label: 'Schedule' },
   { href: '/tournaments', label: 'Tournaments' },
   { href: '/players', label: 'Players' },
   { href: 'https://www.youtube.com/channel/UClH02lUKHkbEsWTlvBtNCkQ', label: 'CCTV', newTab: true },

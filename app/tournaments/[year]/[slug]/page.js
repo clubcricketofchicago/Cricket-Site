@@ -231,8 +231,11 @@ export default function LeagueStatsContainer() {
   }, [allTournaments, currentTournamentIndex, params, router, fetchFixturesForTournament]);
 
   if (loading) {
-    console.log("Page is loading; returning null.");
-    return null;
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <p className="roboto-condensed-regular text-white p3">Loading tournament…</p>
+      </div>
+    );
   }
   if (error || !tournamentData) {
     console.log("Error or missing tournamentData; rendering notFound().");
