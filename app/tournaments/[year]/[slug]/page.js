@@ -3,9 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter, notFound } from "next/navigation";
 
-import { fetchGraphQL } from "../../../lib/graphqlClient";
-import { getFixturesByTournamentSlug } from "../../../lib/queries/fixturesByTournament";
-import { getTournamentPageQuery } from "../../../lib/queries/tournamentPageQuery";
+// Tournament data now comes from the local DB (Neon) via internal API routes
+// (/api/tournaments and /api/tournaments/fixtures), shaped like the old CMS payload.
 
 import LeagueLogoSlider from "../../../components/tournaments/LeagueLogoSlider";
 import PlayerOfTheWeek from "../../../components/tournaments/PlayerOfTheWeek";
@@ -110,10 +109,10 @@ export default function LeagueStatsContainer() {
           console.log("Already have fixtures stored for slug:", tournament.slug, allFixtures[tournament.slug]);
           return allFixtures[tournament.slug];
         }
-        const fixtureQuery = getFixturesByTournamentSlug();
-        const variables = { slug: [tournament.slug] };
-        console.log("Using variables:", variables);
-        const fixtureData = await fetchGraphQL(fixtureQuery, variables);
+        const res = await fetch(
+          `/api/tournaments/fixtures?slug=${encodeURIComponent(tournament.slug)}`
+        );
+        const fixtureData = await res.json();
         console.log("Fixtures API response:", fixtureData);
         const tournamentFixtures = (fixtureData && fixtureData.entries.filter(entry => entry.mappedSeries && entry.mappedSeries.length > 0)) || [];
         if (tournament.slug) {
@@ -141,8 +140,8 @@ export default function LeagueStatsContainer() {
       return;
     }
 
-    const query = getTournamentPageQuery();
-    fetchGraphQL(query)
+    fetch("/api/tournaments")
+      .then((r) => r.json())
       .then(async (data) => {
         console.log("Tournament page fetch response:", data);
         const allEntries = (data && data.entries) || [];
