@@ -18,6 +18,8 @@ import HeroBannerSkeleton from "./components/skeletons/HeroBannerSkeleton";
 const HomePageContent = () => {
   const [pageData, setPageData] = useState(null);
   const [error, setError] = useState(null);
+  // Upcoming fixtures come from the local DB (Neon); editorial blocks stay on the CMS.
+  const [dbFixtures, setDbFixtures] = useState(null);
 
   useEffect(() => {
     const query = getHomePageQuery();
@@ -30,6 +32,11 @@ const HomePageContent = () => {
         console.error("Error fetching data from Craft CMS:", err);
         setError(err.message);
       });
+
+    fetch("/api/schedule")
+      .then((r) => r.json())
+      .then((d) => setDbFixtures(d.entries || []))
+      .catch(() => setDbFixtures([]));
   }, []);
 
   if (error) {
@@ -61,8 +68,15 @@ const HomePageContent = () => {
             </Suspense>
           );
         case "fixturesGrid":
-          console.log("Fixtures Grid Data:", block);
-          return <FixturesGrid key={block.id} data={block} />;
+          return (
+            <FixturesGrid
+              key={block.id}
+              data={{
+                ...block,
+                fixturesEntries: dbFixtures ?? block.fixturesEntries,
+              }}
+            />
+          );
         case "tournamentSection":
           return <TournamentSection key={block.id} data={block} />;
         case "timerBanner":
