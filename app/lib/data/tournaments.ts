@@ -77,6 +77,9 @@ async function buildDetail(series: { id: number; name: string; year: string }) {
     teamLogo: [{ url: img(s.teamLogo) }],
     wins: s.won,
     loses: s.lost,
+    draws: s.tied,
+    noResults: s.noResult,
+    points: s.points,
   }));
 
   // Player of the Week: top run-scorer + top wicket-taker

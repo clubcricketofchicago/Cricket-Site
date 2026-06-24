@@ -48,6 +48,17 @@ function StandingListEle({ team }) {
       <div className="SListing_lose">
         <p className="roboto-condensed-bold light_grey p5">{team.loses || 0}</p>
       </div>
+      <div className="SListing_draw">
+        <p className="roboto-condensed-bold light_grey p5">{team.draws || 0}</p>
+      </div>
+      <div className="SListing_nr">
+        <p className="roboto-condensed-bold light_grey p5">{team.noResults || 0}</p>
+      </div>
+      <div className="SListing_pts">
+        <p className="roboto-condensed-bold p5" style={{ color: "#D2A357" }}>
+          {team.points ?? 0}
+        </p>
+      </div>
     </div>
   );
 }
@@ -71,6 +82,15 @@ function LeagueStandings({ teamStandings }) {
           </div>
           <div className="SListing_lose">
             <p className="roboto-condensed-bold light_grey p5">L</p>
+          </div>
+          <div className="SListing_draw">
+            <p className="roboto-condensed-bold light_grey p5">D</p>
+          </div>
+          <div className="SListing_nr">
+            <p className="roboto-condensed-bold light_grey p5">NR</p>
+          </div>
+          <div className="SListing_pts">
+            <p className="roboto-condensed-bold p5" style={{ color: "#D2A357" }}>PTS</p>
           </div>
         </div>
 

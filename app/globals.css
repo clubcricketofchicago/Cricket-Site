@@ -1028,19 +1028,24 @@ div.SListing_team_ele:last-child
 }
 div.SListing_name
 {
-    width:80%;
+    width:42%;
 }
-div.SListing_win
+div.SListing_win,
+div.SListing_lose,
+div.SListing_draw,
+div.SListing_nr
 {
     width:10%;
     margin-top: auto;
     margin-bottom: auto;
+    text-align: center;
 }
-div.SListing_lose
+div.SListing_pts
 {
-    width:10%;
+    width:18%;
     margin-top: auto;
     margin-bottom: auto;
+    text-align: center;
 }
 div.team_ico
 {
