@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { format, addMonths, addYears, parseISO, isSameDay } from 'date-fns';
 import Image from 'next/image';
+import { Reveal } from '../motion';
 
 interface MatchItem {
   id: string;
@@ -152,7 +154,7 @@ export default function DateCalendar({ matches: rawMatches }: DateCalendarProps)
             </div>
 
             {/* Calendar Grid */}
-            <div className="calendar-grid">
+            <Reveal className="calendar-grid" delay={0.1}>
               {/* Day labels (Sun-Sat) */}
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
                 <div key={day} className="day-label">
@@ -190,15 +192,18 @@ export default function DateCalendar({ matches: rawMatches }: DateCalendarProps)
                 const hasMatch = Boolean(matchForThisDay);
 
                 return (
-                  <div
+                  <motion.div
                     key={index}
-                    className={`calendar-day 
-                      ${hasMatch ? 'game-date' : ''} 
-                      ${isToday ? 'today' : ''} 
+                    className={`calendar-day
+                      ${hasMatch ? 'game-date' : ''}
+                      ${isToday ? 'today' : ''}
                       ${!isCurrentMonth ? 'other-month' : ''}
                       ${isSelected ? 'selected' : ''}
                     `}
                     onClick={() => handleDayClick(day)}
+                    whileHover={hasMatch ? { scale: 1.08, zIndex: 5 } : undefined}
+                    whileTap={hasMatch ? { scale: 0.97 } : undefined}
+                    transition={{ type: 'spring', stiffness: 320, damping: 18 }}
                   >
                     <div className="day-number">{day.getDate()}</div>
                     {vsTeamName && vsTeamLogo && (
@@ -216,13 +221,13 @@ export default function DateCalendar({ matches: rawMatches }: DateCalendarProps)
                         />
                       </div>
                     )}
-                  </div>
+                  </motion.div>
                 );
               })}
-            </div>
+            </Reveal>
           </div>
 
-          {/* 
+          {/*
             Match details section for selected date
             (Commented out in your code. Uncomment if needed.)
           */}

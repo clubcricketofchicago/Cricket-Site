@@ -6,6 +6,7 @@ import RenderBattingDataTable from "../../components/tournaments/RenderBattingDa
 import RenderBowlingDataTable from "../../components/tournaments/RenderBowlingDataTable";
 import RenderFieldingDataTable from "../../components/tournaments/RenderFieldingDataTable";
 import RenderRankingDataTable from "../../components/tournaments/RenderRankingDataTable";
+import { Reveal } from "../motion";
 
 export default function NumberZone({
   battingNumberZone = [],
@@ -74,7 +75,7 @@ export default function NumberZone({
       <div className="NZ_title">
         <h5 className="oswald-bold p1 white_color">NUMBER ZONE</h5>
       </div>
-      <div className="NZ_NT_container">
+      <Reveal className="NZ_NT_container">
         <Tabs>
           <div className="NZ_NT_tabList_parent">
             <TabList>
@@ -109,7 +110,7 @@ export default function NumberZone({
             <RenderRankingDataTable rankingData={rankingData} />
           </TabPanel>
         </Tabs>
-      </div>
+      </Reveal>
     </section>
   );
 }

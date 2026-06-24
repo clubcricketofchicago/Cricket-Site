@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import React from "react";
+import { Stagger, StaggerItem } from "../motion";
 
 export default function SponsorsBanner({ data }) {
   // Adjust this to match your CMS base URL
@@ -54,15 +55,15 @@ export default function SponsorsBanner({ data }) {
         </h2>
 
         {/* Sponsors grid */}
-        <div
+        <Stagger
           className={`
-            grid 
-            ${sponsorItems.length <= 1 
-              ? "grid-cols-1" 
+            grid
+            ${sponsorItems.length <= 1
+              ? "grid-cols-1"
               : sponsorItems.length === 2
               ? "grid-cols-1 md:grid-cols-2"
               : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-            } 
+            }
             gap-8 w-full mx-auto
           `}
         >
@@ -71,8 +72,9 @@ export default function SponsorsBanner({ data }) {
             const altText = image.alt || image.title || "Sponsor logo";
 
             return (
-              <div
+              <StaggerItem
                 key={image.id || index}
+                hover
                 className="flex justify-center items-center p-4 rounded-lg"
               >
                 {/* If we have a link, wrap the image in <a>. Otherwise, just render the image. */}
@@ -113,10 +115,10 @@ export default function SponsorsBanner({ data }) {
                     </noscript>
                   </>
                 )}
-              </div>
+              </StaggerItem>
             );
           })}
-        </div>
+        </Stagger>
       </div>
     </section>
   );

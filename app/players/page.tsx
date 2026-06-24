@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 
 import Image from 'next/image'
 import SectionTitleEle from '../components/ui/SectionTitleEle'
+import { Stagger, StaggerItem, AnimatedNumber } from '../components/motion'
 import { useEffect, useState } from 'react'
 // Roster now comes from the local DB (Neon) via /api/players (CCC's squad), shaped
 // like the old CMS player payload. The "Show Full Stats" modal still uses the live
@@ -356,20 +357,19 @@ function PlayerCardEle({
                 <div className="flex justify-between w-full h-auto mb-[2%]">
                   <p className="my-auto roboto-condensed-bold p1">MATCHES</p>
                   <p className="my-auto roboto-condensed-bold p1">
-                    {player.matches}
+                    <AnimatedNumber value={player.matches ?? 0} />
                   </p>
                 </div>
                 <div className="flex justify-between w-full h-auto mb-[2%]">
                   <p className="my-auto roboto-condensed-bold p1">RUNS</p>
                   <p className="my-auto roboto-condensed-bold p1">
-                    {player.totalruns ?? 0}
-
+                    <AnimatedNumber value={player.totalruns ?? 0} />
                   </p>
                 </div>
                 <div className="flex justify-between w-full h-auto">
                   <p className="my-auto roboto-condensed-bold p1">WICKETS</p>
                   <p className="my-auto roboto-condensed-bold p1">
-                    {player.wickets}
+                    <AnimatedNumber value={player.wickets ?? 0} />
                   </p>
                 </div>
               </div>
@@ -415,12 +415,13 @@ export default function Page() {
       <div className="LSC_parent PlayersPage center_aligned px-[3.5%] pb-[20%] pt-[10%] lg:py-[2%] bg-white/10 backdrop-blur-sm rounded-[2vw] lg:pb-[6vw]">
         <SectionTitleEle>Players</SectionTitleEle>
         <hr className="w-full h-[0.1vw] bg-[#FFFFFF] border-none" />
-        <div className="players_panel_container items-center relative">
+        <Stagger className="players_panel_container items-center relative">
           {players.map((player) => (
-            <PlayerCardEle key={player.id} player={player} lightswitch={lightswitch} />
+            <StaggerItem key={player.id} hover>
+              <PlayerCardEle player={player} lightswitch={lightswitch} />
+            </StaggerItem>
           ))}
-
-        </div>
+        </Stagger>
       </div>
     </section>
   )

@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { Reveal } from '../motion'
 
 export default function HeroBanner({ data }) {
   // Extract image data from the first item in each array (if available)
@@ -36,6 +37,7 @@ export default function HeroBanner({ data }) {
   };
 
   return (
+    <Reveal>
     <section className="hero_content_block_parent">
       {/* Layer 2 (Middle) */}
       <div
@@ -100,5 +102,6 @@ export default function HeroBanner({ data }) {
         )}
       </div>
     </section>
+    </Reveal>
   );
 }

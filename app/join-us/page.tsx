@@ -5,6 +5,8 @@ export const dynamic = 'force-dynamic';
 import React, { FormEvent, useRef } from "react";
 import { sendForm } from "emailjs-com";
 import Image from "next/image"; // 1) Import Next.js <Image>
+import { Reveal } from "../components/motion";
+import { motion } from "framer-motion";
 
 export default function BGWithForm() {
   const form = useRef<HTMLFormElement>(null);
@@ -45,7 +47,7 @@ export default function BGWithForm() {
     <section className="join_us_container">
       <div className="base_padding">
         <div className="join_us_parent max_content center_aligned">
-          <div className="join_us_form">
+          <Reveal className="join_us_form">
             <div className="jUF_title">
               <h2 className="oswald-regular h1 brand_orange">Join the Team</h2>
             </div>
@@ -146,14 +148,17 @@ export default function BGWithForm() {
                 </div>
               </div>
               <div className="form_submitButton">
-                <input
+                <motion.input
                   type="submit"
                   value="Submit"
                   className="roboto-condensed-med p1"
+                  whileHover={{ scale: 1.05, y: -3 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
                 />
               </div>
             </form>
-          </div>
+          </Reveal>
         </div>
         <div className="success_msg">
           <div id="SC_BTN" className="SM_container flex_grid hidden_SC">

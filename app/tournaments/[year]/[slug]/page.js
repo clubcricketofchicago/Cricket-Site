@@ -12,6 +12,7 @@ import LeagueHighlights from "../../../components/tournaments/LeagueHighlights";
 import FixturesAndResults from "../../../components/tournaments/FixturesAndResults";
 import NumberZone from "../../../components/tournaments/NumberZone";
 import Image from "next/image";
+import { Reveal, Stagger, StaggerItem } from "../../../components/motion";
 
 const cmsBaseUrl = process.env.NEXT_PUBLIC_CMS_URL || "";
 
@@ -73,17 +74,21 @@ function LeagueStandings({ teamStandings }) {
           </div>
         </div>
 
-        <div className="SListing_listing">
-          {hasTeams ? (
-            teamStandings.slice(0, 10).map((team) => (
-              <StandingListEle key={team.id || Math.random().toString()} team={team} />
-            ))
-          ) : (
+        {hasTeams ? (
+          <Stagger className="SListing_listing">
+            {teamStandings.slice(0, 10).map((team) => (
+              <StaggerItem key={team.id || Math.random().toString()} hover>
+                <StandingListEle team={team} />
+              </StaggerItem>
+            ))}
+          </Stagger>
+        ) : (
+          <div className="SListing_listing">
             <div className="p-4 text-center text-[#d8d8d8]">
               <p>No standings available</p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -216,7 +221,7 @@ export default function LeagueStatsContainer() {
     <>
       <section className="LSC_container base_paddings">
         <div className="LSC_parent center_aligned flex_grid">
-          <div className="LSC_smallCol_grid">
+          <Reveal className="LSC_smallCol_grid" delay={0}>
             <div className="NewLeague_pag_icon_container">
               <div className="flex">
                 <div className="NewLeague_pag_icon prev_icon cursor-pointer" onClick={goToPrevTournament}>
@@ -245,9 +250,9 @@ export default function LeagueStatsContainer() {
             />
 
             <LeagueStandings teamStandings={tournamentData.teamStandings || []} />
-          </div>
+          </Reveal>
 
-          <div className="LSC_BigCol_grid">
+          <Reveal className="LSC_BigCol_grid" delay={0.1}>
             <PlayerOfTheWeek
               batsmanName={tournamentData.batsmanName}
               batsmanImage={getFullImageUrl(tournamentData.batsmanImage?.[0]?.url)}
@@ -264,24 +269,26 @@ export default function LeagueStatsContainer() {
               teamBatting={tournamentData.teamBatting}
               teamBowling={tournamentData.teamBowling}
             />
-          </div>
+          </Reveal>
 
-          <div className="LSC_smallCol_grid">
+          <Reveal className="LSC_smallCol_grid" delay={0.2}>
             <FixturesAndResults
               fixtureCount={7}
               resultsCount={7}
               fixtures={fixtures}
               results={tournamentData.resultCards || []}
             />
-          </div>
+          </Reveal>
         </div>
 
-        <NumberZone
-          battingNumberZone={tournamentData.battingNumberZone}
-          bowlingNumberZone={tournamentData.bowlingNumberZone}
-          fieldingNumberZone={tournamentData.fieldingNumberZone}
-          rankingZone={tournamentData.rankingZone}
-        />
+        <Reveal delay={0.2}>
+          <NumberZone
+            battingNumberZone={tournamentData.battingNumberZone}
+            bowlingNumberZone={tournamentData.bowlingNumberZone}
+            fieldingNumberZone={tournamentData.fieldingNumberZone}
+            rankingZone={tournamentData.rankingZone}
+          />
+        </Reveal>
       </section>
     </>
   );

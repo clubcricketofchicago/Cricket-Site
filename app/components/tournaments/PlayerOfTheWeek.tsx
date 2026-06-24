@@ -1,5 +1,7 @@
 "use client";
 import React from "react";
+import { motion } from "framer-motion";
+import { AnimatedNumber } from "../motion";
 
 export interface PlayerOfTheWeekProps {
   batsmanName?: string;
@@ -37,7 +39,11 @@ export default function PlayerOfTheWeek({
   return (
     <section className="POTW_container">
       <div className="POTW_parent flex_grid rounded-[18px] overflow-hidden">
-        <div className="POTW_container">
+        <motion.div
+          className="POTW_container"
+          whileHover={{ scale: 1.03 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        >
           <div className="POTW_player_title">
             <h4 className="brand_orange p1 roboto-condensed-bold">BEST BATSMAN</h4>
           </div>
@@ -50,19 +56,23 @@ export default function PlayerOfTheWeek({
               {batsmanName}
             </p>
             <p className="POTW_score brand_orange h1 roboto-condensed-bold">
-              {batsmanValue}
+              <AnimatedNumber value={batsmanValue} />
             </p>
             <p className="POTW_score_text brand_orange p1 roboto-condensed-bold">
               {batsmanLabel?.toUpperCase() || "RUNS"}
             </p>
           </div>
-        </div>
+        </motion.div>
 
         <div className="POFT_container">
           <img src="/images/ccc_players.svg" alt="divider icon" />
         </div>
 
-        <div className="POTW_container">
+        <motion.div
+          className="POTW_container"
+          whileHover={{ scale: 1.03 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        >
           <div className="POTW_player_title">
             <h4 className="brand_orange p1 roboto-condensed-bold">BEST BOWLER</h4>
           </div>
@@ -75,13 +85,13 @@ export default function PlayerOfTheWeek({
               {bowlerName}
             </p>
             <p className="POTW_score brand_orange h1 roboto-condensed-bold">
-              {bowlerValue}
+              <AnimatedNumber value={bowlerValue} />
             </p>
             <p className="POTW_score_text brand_orange p1 roboto-condensed-bold">
               {bowlerCardLabel?.toUpperCase() || "WICKETS"}
             </p>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

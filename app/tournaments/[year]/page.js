@@ -5,6 +5,7 @@ import SectionTitleEle from '../../components/ui/SectionTitleEle';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Stagger, StaggerItem } from '../../components/motion';
 // Tournaments list now comes from the local DB (Neon) via /api/tournaments (includes 2026).
 
 const getFullImageUrl = (url) => {
@@ -85,17 +86,17 @@ export default function Page() {
       <div className="LSC_parent PlayersPage center_aligned px-[3.5%] py-[2%] bg-white/10 backdrop-blur-sm rounded-[2vw] pb-[6vw]">
         <SectionTitleEle>{title}</SectionTitleEle>
         <hr className="w-full h-[0.1vw] bg-[#FFFFFF] border-none" />
-        <div className="grid grid-cols-4 gap-[8vw] mt-[5%]">
+        <Stagger className="grid grid-cols-4 gap-[8vw] mt-[5%]">
           {entries.map((entry) => (
-            
-            <SeriesCard
-              key={entry.id}
-              imageUrl={entry.flagImage[0]?.url ? getFullImageUrl(entry.flagImage[0]?.url) : '/images/logo.png'}
-              seriesName={entry.title}
-              hyperLink={`/tournaments/${currentSlug}/${entry.slug}`}
-            />
+            <StaggerItem key={entry.id} hover>
+              <SeriesCard
+                imageUrl={entry.flagImage[0]?.url ? getFullImageUrl(entry.flagImage[0]?.url) : '/images/logo.png'}
+                seriesName={entry.title}
+                hyperLink={`/tournaments/${currentSlug}/${entry.slug}`}
+              />
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
       </div>
     </section>
   );

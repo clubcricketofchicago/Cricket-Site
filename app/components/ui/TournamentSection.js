@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import SectionTitleEle from './SectionTitleEle'
+import { Reveal, AnimatedNumber } from '../motion'
 
 function TopPlayers({ tournament }) {
   if (!tournament || !tournament.topPlayers || tournament.topPlayers.length === 0) {
@@ -200,7 +201,9 @@ function LeagueInfo({ leagueStats }) {
     <div className="LT_gridEle LT_league_info flex_grid">
       {statsToDisplay.map((stat, index) => (
         <div key={index} className="match_info_ele">
-          <p className="oswald-regular brand_orange h2">{stat?.number || 0}</p>
+          <p className="oswald-regular brand_orange h2">
+            <AnimatedNumber value={Number(stat?.number) || 0} />
+          </p>
           <p className="oswald-regular white_color p1">{stat?.title || 'N/A'}</p>
         </div>
       ))}
@@ -234,12 +237,12 @@ export default function TournamentSection({ data }) {
   return (
     <section className="mt-[8%]">
       <div className="LT_parent center_aligned">
-        <div>
+        <Reveal>
           <SectionTitleEle className="base_paddings">
             {(data && data.title) || 'Tournaments'}
           </SectionTitleEle>
-        </div>
-        <div className="px-[5%] bg-[#161616]">
+        </Reveal>
+        <Reveal delay={0.1} className="px-[5%] bg-[#161616]">
           <div className="LT_container flex_grid">
             <div className="pagination_home_controls">
               <Image
@@ -278,7 +281,7 @@ export default function TournamentSection({ data }) {
               tournament={currentTournament}
             />
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   )

@@ -15,6 +15,7 @@ import { fetchGraphQL } from "./lib/graphqlClient";
 import { getHomePageQuery } from "./lib/queries/homePageQuery";
 import PageTransition from "./components/ui/PageTransition";
 import HeroBannerSkeleton from "./components/skeletons/HeroBannerSkeleton";
+import { Reveal } from "./components/motion";
 
 const HomePageContent = () => {
   const [pageData, setPageData] = useState(null);
@@ -69,32 +70,58 @@ const HomePageContent = () => {
       switch (block.typeHandle) {
         case "homeHeroBanner":
           return (
-            <Suspense key={block.id} fallback={<div className="loading-hero">Loading hero...</div>}>
-              <HeroBanner data={block} />
-            </Suspense>
+            <Reveal key={block.id}>
+              <Suspense fallback={<div className="loading-hero">Loading hero...</div>}>
+                <HeroBanner data={block} />
+              </Suspense>
+            </Reveal>
           );
         case "fixturesGrid":
           return (
             <Fragment key={block.id}>
-              <FixturesGrid
-                data={{
-                  ...block,
-                  fixturesEntries: dbFixtures ?? block.fixturesEntries,
-                }}
-              />
-              <RecentResults results={recentResults ?? []} />
+              <Reveal>
+                <FixturesGrid
+                  data={{
+                    ...block,
+                    fixturesEntries: dbFixtures ?? block.fixturesEntries,
+                  }}
+                />
+              </Reveal>
+              <Reveal>
+                <RecentResults results={recentResults ?? []} />
+              </Reveal>
             </Fragment>
           );
         case "tournamentSection":
-          return <TournamentSection key={block.id} data={block} />;
+          return (
+            <Reveal key={block.id}>
+              <TournamentSection data={block} />
+            </Reveal>
+          );
         case "timerBanner":
-          return <NewSeasonCounter key={block.id} data={block} />;
+          return (
+            <Reveal key={block.id}>
+              <NewSeasonCounter data={block} />
+            </Reveal>
+          );
         case "meetTheManagement":
-          return <MeetSquad key={block.id} data={block} />;
+          return (
+            <Reveal key={block.id}>
+              <MeetSquad data={block} />
+            </Reveal>
+          );
         case "banner":
-          return <BGParralaxBanner key={block.id} data={block} />;
+          return (
+            <Reveal key={block.id}>
+              <BGParralaxBanner data={block} />
+            </Reveal>
+          );
         case "sponsorsBanner":
-          return <SponsorsBanner key={block.id} data={block} />;
+          return (
+            <Reveal key={block.id}>
+              <SponsorsBanner data={block} />
+            </Reveal>
+          );
         default:
           return <></>;
       }
