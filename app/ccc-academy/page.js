@@ -13,7 +13,6 @@ import SponsorsBanner from '../components/ui/SponsorsBanner'
 import FixturesGrid from '../components/ui/FixturesGrid'
 import TournamentSection from '../components/ui/TournamentSection'
 import HeroBannerSkeleton from '../components/skeletons/HeroBannerSkeleton'
-import { Reveal } from '../components/motion'
 
 const AcademyPageContent = () => {
   const [pageData, setPageData] = useState(null)
@@ -57,48 +56,22 @@ const AcademyPageContent = () => {
       switch (block.typeHandle) {
         case 'homeHeroBanner':
           return (
-            <Reveal key={block.id}>
-              <Suspense fallback={<div className="loading-hero">Loading hero...</div>}>
-                <HeroBanner data={block} />
-              </Suspense>
-            </Reveal>
+            <Suspense key={block.id} fallback={<div className="loading-hero">Loading hero...</div>}>
+              <HeroBanner data={block} />
+            </Suspense>
           )
         case 'fixturesGrid':
-          return (
-            <Reveal key={block.id}>
-              <FixturesGrid data={block} />
-            </Reveal>
-          )
+          return <FixturesGrid key={block.id} data={block} />
         case 'tournamentSection':
-          return (
-            <Reveal key={block.id}>
-              <TournamentSection data={block} />
-            </Reveal>
-          )
+          return <TournamentSection key={block.id} data={block} />
         case 'timerBanner':
-          return (
-            <Reveal key={block.id}>
-              <NewSeasonCounter data={block} />
-            </Reveal>
-          )
+          return <NewSeasonCounter key={block.id} data={block} />
         case 'meetTheManagement':
-          return (
-            <Reveal key={block.id}>
-              <MeetSquad data={block} />
-            </Reveal>
-          )
+          return <MeetSquad key={block.id} data={block} />
         case 'banner':
-          return (
-            <Reveal key={block.id}>
-              <BGParralaxBanner data={block} />
-            </Reveal>
-          )
+          return <BGParralaxBanner key={block.id} data={block} />
         case 'sponsorsBanner':
-          return (
-            <Reveal key={block.id}>
-              <SponsorsBanner data={block} />
-            </Reveal>
-          )
+          return <SponsorsBanner key={block.id} data={block} />
         default:
           return null
       }

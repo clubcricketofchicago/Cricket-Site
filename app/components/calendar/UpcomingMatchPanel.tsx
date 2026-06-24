@@ -1,11 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import SectionTitleEle from '../ui/SectionTitleEle';
 import TimeCounter from '../ui/TimeCounter';
 import SingleFixtureEle from '../ui/SingleFixtureEle';
-import { Reveal } from '../motion';
 
 // Placeholder data for when there is no upcoming match
 const PLACEHOLDER_UPCOMING_MATCH = {
@@ -62,20 +60,15 @@ export default function UpcomingMatchPanel({ match }: UpcomingMatchPanelProps) {
           {hasMatch ? (
             <>
               {/* Single Fixture Card */}
-              <Reveal className="UMP_match_ele mb-[5%]" delay={0.1}>
-                <motion.div
-                  whileHover={{ y: -6, scale: 1.02 }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                >
-                  <SingleFixtureEle
-                    fixture={upcomingMatch}
-                    isActive={false} // no "raised" effect
-                  />
-                </motion.div>
-              </Reveal>
+              <div className="UMP_match_ele mb-[5%]">
+                <SingleFixtureEle
+                  fixture={upcomingMatch}
+                  isActive={false} // no "raised" effect
+                />
+              </div>
 
               {/* Countdown Timer */}
-              <Reveal className="UMP_timer" delay={0.2}>
+              <div className="UMP_timer">
                 <TimeCounter
                   matchDate={
                     new Date(upcomingMatch.date).toISOString().split('T')[0]
@@ -85,7 +78,7 @@ export default function UpcomingMatchPanel({ match }: UpcomingMatchPanelProps) {
                     { hour: '2-digit', minute: '2-digit' }
                   )}
                 />
-              </Reveal>
+              </div>
             </>
           ) : (
             // Fallback if there's no upcoming match

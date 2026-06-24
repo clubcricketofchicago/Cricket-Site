@@ -7,7 +7,6 @@ import SectionTitleEle from '../components/ui/SectionTitleEle';
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Reveal, Stagger, StaggerItem } from '../components/motion';
 // Tournaments list now comes from the local DB (Neon) via /api/tournaments (includes 2026).
 
 const getFullImageUrl = (url) => {
@@ -86,23 +85,20 @@ export default function Page() {
         ) : (
           groupedTournaments.map((group) => (
             <div key={group.yearSlug} className="mb-[4vw]">
-              <Reveal>
-                <h3 className="text-white h4 uppercase roboto-condensed-bold my-[4vh] lg:mt-[0] lg:mb-[2%]">
-                  {group.yearTitle}:
-                </h3>
-              </Reveal>
+              <h3 className="text-white h4 uppercase roboto-condensed-bold my-[4vh] lg:mt-[0] lg:mb-[2%]">
+                {group.yearTitle}:
+              </h3>
               {group.tournaments.length ? (
-                <Stagger className="grid grid-cols-2 lg:grid-cols-4 gap-[8vw]">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-[8vw]">
                   {group.tournaments.map((tournament) => (
-                    <StaggerItem key={tournament.id} hover>
-                      <SeriesCard
-                        imageUrl={tournament.flagImage[0]?.url ? getFullImageUrl(tournament.flagImage[0]?.url) : '/images/logo.png'}
-                        seriesName={tournament.title}
-                        hyperLink={`/tournaments/${group.yearSlug}/${tournament.slug}`}
-                      />
-                    </StaggerItem>
+                    <SeriesCard
+                      key={tournament.id}
+                      imageUrl={tournament.flagImage[0]?.url ? getFullImageUrl(tournament.flagImage[0]?.url) : '/images/logo.png'}
+                      seriesName={tournament.title}
+                      hyperLink={`/tournaments/${group.yearSlug}/${tournament.slug}`}
+                    />
                   ))}
-                </Stagger>
+                </div>
               ) : (
                 <p className="text-white italic">No tournaments found under this year.</p>
               )}

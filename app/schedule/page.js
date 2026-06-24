@@ -5,7 +5,6 @@ export const dynamic = 'force-dynamic';
 import { useEffect, useState, Suspense } from "react";
 import UpcomingMatchPanel from "../components/calendar/UpcomingMatchPanel";
 import DateCalendar from "../components/calendar/DateCalendar";
-import { Reveal } from "../components/motion";
 // Calendar data now comes from the local DB (Neon) via /api/schedule (CCC's fixtures),
 // shaped like the old CMS fixture payload.
 
@@ -29,11 +28,7 @@ export default function Page() {
   }, []);
 
   if (loading) {
-    return (
-      <Reveal className="loading-message animate-pulse">
-        Loading calendar data...
-      </Reveal>
-    );
+    return <div className="loading-message">Loading calendar data...</div>;
   }
 
   if (error) {
@@ -41,7 +36,7 @@ export default function Page() {
   }
 
   if (!matches || !matches.entries || matches.entries.length === 0) {
-    return <Reveal className="no-data">No match data available.</Reveal>;
+    return <div className="no-data">No match data available.</div>;
   }
 
   // Filter out matches that are today or earlier
@@ -55,7 +50,7 @@ export default function Page() {
 
   // If all matches are filtered out, you can handle that gracefully
   if (filteredEntries.length === 0) {
-    return <Reveal className="no-data">No upcoming matches.</Reveal>;
+    return <div className="no-data">No upcoming matches.</div>;
   }
 
   // Optionally, you can wrap them back into the same shape
@@ -73,14 +68,10 @@ export default function Page() {
           }
         >
           {/* Pass just the first (earliest) upcoming match to UpcomingMatchPanel */}
-          <Reveal delay={0}>
-            <UpcomingMatchPanel match={filteredEntries[0]} />
-          </Reveal>
+          <UpcomingMatchPanel match={filteredEntries[0]} />
 
           {/* Pass the full list of upcoming matches to DateCalendar */}
-          <Reveal delay={0.15}>
-            <DateCalendar matches={filteredMatches} />
-          </Reveal>
+          <DateCalendar matches={filteredMatches} />
         </Suspense>
       </div>
     </section>

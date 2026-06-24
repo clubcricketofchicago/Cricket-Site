@@ -6,8 +6,6 @@ import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { fetchGraphQL } from '../lib/graphqlClient'
 import { getGroundsQuery } from '../lib/queries/groundsQuery'
-import { Reveal, AnimatedNumber } from '../components/motion'
-import { motion } from 'framer-motion'
 
 interface GroundImageProps {
   alt: string
@@ -37,9 +35,7 @@ function OPInfoEle({ setText, setNum }: { setText: string; setNum: number }) {
         <h5 className="roboto-condensed-med p2 white_color">{setText}</h5>
       </div>
       <div className="OPIE_ele_num">
-        <p className="roboto-condensed-bold h4 brand_orange">
-          <AnimatedNumber value={Number(setNum) || 0} />
-        </p>
+        <p className="roboto-condensed-bold h4 brand_orange">{setNum}</p>
       </div>
     </div>
   )
@@ -128,18 +124,12 @@ function OverlayPanel({
 
   return (
     <div className="OP_container">
-      <Reveal className="OP_parent">
+      <div className="OP_parent">
         <div className="OP_title">
           <h2 className="oswald-bold h1 white_color">{currentGround.title}</h2>
         </div>
         <div className="OP_pag_bar flex_grid">
-          <motion.div
-            className="OP_pag_bar_ele prev_btn"
-            onClick={HandlePrevClick}
-            whileHover={{ x: -6, scale: 1.06 }}
-            whileTap={{ scale: 0.94 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 18 }}
-          >
+          <div className="OP_pag_bar_ele prev_btn" onClick={HandlePrevClick}>
             <div className="pag_bar_ele_image">
               <Image
                 src="/images/slide_pag_ico.png"
@@ -150,14 +140,8 @@ function OverlayPanel({
               />
             </div>
             <p className="roboto-condensed-regular p6 white_color">Previous</p>
-          </motion.div>
-          <motion.div
-            className="OP_pag_bar_ele next_btn"
-            onClick={HandleNextClick}
-            whileHover={{ x: 6, scale: 1.06 }}
-            whileTap={{ scale: 0.94 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 18 }}
-          >
+          </div>
+          <div className="OP_pag_bar_ele next_btn" onClick={HandleNextClick}>
             <div className="pag_bar_ele_image">
               <Image
                 src="/images/slide_pag_ico.png"
@@ -168,7 +152,7 @@ function OverlayPanel({
               />
             </div>
             <p className="roboto-condensed-regular p6 white_color">Next</p>
-          </motion.div>
+          </div>
         </div>
         <div className="mob_only mobGround_viewer">
           {currentGround.groundImageMobile && currentGround.groundImageMobile[0] && (
@@ -206,7 +190,7 @@ function OverlayPanel({
             *Midwest Cricket League | Season 2023 |
           </p>
         </div>
-      </Reveal>
+      </div>
     </div>
   )
 }

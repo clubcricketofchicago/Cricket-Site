@@ -3,7 +3,6 @@
 import React from "react";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import Image from "next/image";
-import { Stagger, StaggerItem } from "../motion";
 
 // --- Helper to build full CMS image URLs ---
 const cmsBaseUrl = process.env.NEXT_PUBLIC_CMS_URL || "";
@@ -304,25 +303,19 @@ export default function FixturesAndResults({
 
         {hasFixtures && (
           <TabPanel>
-            <Stagger className="fixtures_container flex_grid">
+            <div className="fixtures_container flex_grid">
               {fixtures.slice(0, fixtureCount).map((fixture) => (
-                <StaggerItem key={fixture.id} hover>
-                  <MatchFixtureEle fixture={fixture} />
-                </StaggerItem>
+                <MatchFixtureEle key={fixture.id} fixture={fixture} />
               ))}
-            </Stagger>
+            </div>
           </TabPanel>
         )}
 
         {hasResults && (
           <TabPanel>
-            <Stagger>
-              {results.slice(0, resultsCount).map((result) => (
-                <StaggerItem key={result.id} hover>
-                  <MatchResultEle result={result} />
-                </StaggerItem>
-              ))}
-            </Stagger>
+            {results.slice(0, resultsCount).map((result) => (
+              <MatchResultEle key={result.id} result={result} />
+            ))}
           </TabPanel>
         )}
       </Tabs>

@@ -1,6 +1,5 @@
 import React from "react";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
-import { Stagger, StaggerItem, AnimatedNumber } from "../motion";
 
 const cmsBaseUrl = process.env.NEXT_PUBLIC_CMS_URL || 'https://cms-ccc.ddev.site/';
 
@@ -32,9 +31,7 @@ function PlayerCard({ player }) {
           </h5>
         </div>
         <div className="SCE_playerInfo_score">
-          <p className="roboto-condensed-bold h4 brand_orange">
-            <AnimatedNumber value={Number(cardValue) || 0} />
-          </p>
+          <p className="roboto-condensed-bold h4 brand_orange">{cardValue}</p>
         </div>
         <div className="SCE_playerInfo_name">
           <p className="roboto-condensed-regular p2 white_color">{name}</p>
@@ -100,7 +97,7 @@ function CredsEle({ setNum, setText }) {
         {setText}
       </p>
       <p className="credsContainer_para roboto-condensed-bold p4 brand_orange h3">
-        <AnimatedNumber value={Number(setNum) || 0} />
+        {setNum != null ? setNum : 0}
       </p>
     </div>
   );
@@ -143,13 +140,11 @@ export default function LeagueHighlights({
           </TabPanel>
 
           <TabPanel className="react-tabs__tab-panel TP_parent">
-            <Stagger className="TPG_parent">
+            <section className="TPG_parent">
               {topPlayers.slice(0, 4).map((rank, index) => (
-                <StaggerItem key={index} hover>
-                  <PlayerCard player={rank} />
-                </StaggerItem>
+                <PlayerCard key={index} player={rank} />
               ))}
-            </Stagger>
+            </section>
           </TabPanel>
 
           <TabPanel className="react-tabs__tab-panel LS_parent">

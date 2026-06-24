@@ -13,7 +13,6 @@ import 'swiper/css/pagination'
 import { Navigation, Pagination } from 'swiper/modules'
 import SectionTitleEle from './SectionTitleEle'
 import Image from 'next/image'
-import { Reveal } from '../motion'
 
 
 //import images
@@ -161,7 +160,6 @@ export default function MeetSquad({ data }) {
   }
 
   return (
-    <Reveal>
     <section id="meet_squad" className="MS_total_container">
       <section className="MS_info_container base_paddings">
         <div className="center_aligned MS_parent">
@@ -250,6 +248,5 @@ export default function MeetSquad({ data }) {
         </div>
       </section>
     </section>
-    </Reveal>
   )
 }

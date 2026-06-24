@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { Stagger, StaggerItem } from "../motion";
 
 export default function RecentResults({ results }) {
   if (!results || results.length === 0) return null;
@@ -13,11 +12,10 @@ export default function RecentResults({ results }) {
           Recent Results
         </h2>
 
-        <Stagger className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[4vw] lg:gap-[1.5vw]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[4vw] lg:gap-[1.5vw]">
           {results.map((r) => (
-            <StaggerItem
+            <div
               key={r.id}
-              hover
               className="bg-[#181c28] rounded-[3vw] lg:rounded-[0.8vw] p-[4vw] lg:p-[1.4vw] border border-[#D2A357]/30"
             >
               <div className="flex justify-between items-center mb-[4%]">
@@ -82,9 +80,9 @@ export default function RecentResults({ results }) {
                   {r.result}
                 </p>
               )}
-            </StaggerItem>
+            </div>
           ))}
-        </Stagger>
+        </div>
       </div>
     </section>
   );
