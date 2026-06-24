@@ -20,7 +20,10 @@ function pickNextMatch(fixtures) {
       const t = new Date(f.date).getTime()
       return !isNaN(t) && t >= now - 1000 * 60 * 60 * 6 // keep a match in-progress today
     })
-  return (upcoming[0] || fixtures[0]) ?? null
+  // Only a genuine upcoming fixture — never fall back to fixtures[0], or a stale past
+  // fixture would masquerade as "Next match". The card shows its own "fixtures are
+  // coming" empty state when this is null.
+  return upcoming[0] ?? null
 }
 
 // Format the stored calendar date in UTC to avoid the known off-by-one shift.

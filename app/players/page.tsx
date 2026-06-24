@@ -43,12 +43,6 @@ interface GraphQLPlayersResponse {
   entries: Player[]
 }
 
-// GraphQL response for configuration
-interface PlayerConfigurationResponse {
-  globalSet?: {
-    lightswitch?: boolean
-  }
-}
 
 /* ================= TYPES ================= */
 
@@ -84,13 +78,6 @@ interface PlayerStats {
 
 
 
-function getFullImageUrl(url: string) {
-  const cmsBaseUrl = process.env.NEXT_PUBLIC_CMS_URL || 'http://cms.ccc.clubcricketofchicago.com/'
-  if (url?.startsWith('http')) return url
-  const cleanUrl = url?.startsWith('/') ? url.substring(1) : url
-  const baseUrl = cmsBaseUrl.endsWith('/') ? cmsBaseUrl : `${cmsBaseUrl}/`
-  return `${baseUrl}${cleanUrl}`
-}
 
 function PlayerCardEle({
   player,
@@ -121,13 +108,8 @@ function PlayerCardEle({
   const accentColor =
     rank === 1 ? 'var(--orange)' : 'var(--panel-line-strong)'
 
-  interface ApiError {
-    error: string;
-  }
 
 
-
-  const [playerId, setPlayerId] = useState<number | null>(null);
 
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -154,17 +136,13 @@ function PlayerCardEle({
       );
 
       setIsOpen(true);
-    } catch (err) {
+    } catch {
       setError("Failed to fetch stats");
     } finally {
       setLoading(false);
     }
   };
 
-  const openModal = (id: number) => {
-    setPlayerId(id);
-    fetchStats(id);
-  };
 
 
   return (
@@ -204,6 +182,15 @@ function PlayerCardEle({
             >
               View Profile
             </Link>
+
+            {/* Quick in-page career stats (live CricClubs) */}
+            <button
+              type="button"
+              onClick={() => fetchStats(player.playerid || 0)}
+              className="block w-full mt-2 text-[color:var(--text-muted)] font-bold text-center uppercase hover:text-[color:var(--text)] transition-colors"
+            >
+              Full Stats
+            </button>
 
             {/* Popup Modal */}
             {isOpen && (
@@ -426,15 +413,3 @@ export default function Page() {
   )
 }
 
-// --------------------------------------
-// Additional types used in data fetches
-// --------------------------------------
-interface GraphQLPlayersResponse {
-  entries: Player[]
-}
-
-interface PlayerConfigurationResponse {
-  globalSet?: {
-    lightswitch?: boolean
-  }
-}

@@ -162,7 +162,6 @@ export default function DateCalendar({ matches: rawMatches }: DateCalendarProps)
 
               {/* Calendar days */}
               {calendarDays.map((day, index) => {
-                const dayKey = format(day, 'yyyy-MM-dd');
                 const matchForThisDay = getMatchForDate(day);
 
                 if (matchForThisDay) {

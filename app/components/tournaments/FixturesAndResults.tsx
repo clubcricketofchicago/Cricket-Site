@@ -106,26 +106,6 @@ function MatchDate({
   );
 }
 
-// --- Parse "runs/wickets" strings like "223/4" -> { runs: 223, wickets: 4 } ---
-function parseScore(scoreString?: string | null) {
-  if (!scoreString || !scoreString.includes("/")) {
-    return { runs: 0, wickets: 0 };
-  }
-  const [runs, wickets] = scoreString.split("/");
-  return {
-    runs: parseInt(runs || "0", 10) || 0,
-    wickets: parseInt(wickets || "0", 10) || 0,
-  };
-}
-
-// --- Parse overs strings like "19.3/30" -> 19.3 (the bowled overs) ---
-function parseOvers(oversString?: string | null) {
-  if (!oversString) return 0;
-  const [bowledStr] = oversString.split("/");
-  const val = parseFloat(bowledStr);
-  return isNaN(val) ? 0 : val;
-}
-
 // -----------------------------
 // Fixture item for the "Fixtures" tab
 // -----------------------------

@@ -5,13 +5,15 @@
 import { unstable_cache } from "next/cache";
 import { prisma } from "../db/prisma";
 import { TRACKED_SERIES } from "../cricclubs/config";
+import { CCC_NAME, isCCCName } from "./ccc";
 
 const IMG = "https://media.cricclubs.com";
 const img = (p?: string | null) =>
   p ? `${IMG}${p.startsWith("/") ? p : `/${p}`}` : "";
 const fullName = (f?: string | null, l?: string | null) =>
   [f, l].filter(Boolean).join(" ");
-const CCC_NAME = "Club Cricket of Chicago";
+// CCC's stat rows can carry any of its team names across divisions.
+const CCC_TEAM_NAMES = [CCC_NAME, "Club Cricket Of Chicago Seekers", "CCC Stars"];
 
 const SEASON = "Summer 2026";
 const SEASON_SERIES = TRACKED_SERIES.filter((s) => s.year === "2026");
@@ -45,10 +47,10 @@ export interface HomeData {
 async function buildHomeData(): Promise<HomeData> {
   const [battingRows, bowlingRows, standings] = await Promise.all([
     prisma.playerBattingStat.findMany({
-      where: { seriesId: { in: SEASON_IDS }, teamName: CCC_NAME },
+      where: { seriesId: { in: SEASON_IDS }, teamName: { in: CCC_TEAM_NAMES } },
     }),
     prisma.playerBowlingStat.findMany({
-      where: { seriesId: { in: SEASON_IDS }, teamName: CCC_NAME },
+      where: { seriesId: { in: SEASON_IDS }, teamName: { in: CCC_TEAM_NAMES } },
     }),
     prisma.standing.findMany({
       where: { seriesId: { in: SEASON_IDS } },
@@ -91,12 +93,12 @@ async function buildHomeData(): Promise<HomeData> {
   const sixes = [...batAgg.values()].reduce((s, e) => s + e.sixes, 0);
   const wickets = [...bowlAgg.values()].reduce((s, e) => s + e.value, 0);
   const matches = standings
-    .filter((s) => s.teamName === CCC_NAME)
+    .filter((s) => isCCCName(s.teamName))
     .reduce((s, r) => s + r.matches, 0);
 
   const divisions: DivisionSnapshot[] = SEASON_SERIES.map((s) => {
     const table = standings.filter((r) => r.seriesId === s.id); // points-desc order preserved
-    const idx = table.findIndex((r) => r.teamName === CCC_NAME);
+    const idx = table.findIndex((r) => isCCCName(r.teamName));
     const row = idx >= 0 ? table[idx] : null;
     return {
       name: s.name,

@@ -2,11 +2,11 @@
 // Used by the home "Recent Results" widget. Scores/result are from CCC's perspective.
 
 import { prisma } from "../db/prisma";
+import { cccMatchOr, isCCCSide } from "./ccc";
 
 const IMG = "https://media.cricclubs.com";
 const img = (p?: string | null) =>
   p ? `${IMG}${p.startsWith("/") ? p : `/${p}`}` : "";
-const CCC_NAME = "Club Cricket of Chicago";
 
 export interface RecentResult {
   id: number;
@@ -25,7 +25,7 @@ export async function getRecentResults(limit = 6): Promise<RecentResult[]> {
   const candidates = await prisma.match.findMany({
     where: {
       isComplete: true,
-      OR: [{ teamOneName: CCC_NAME }, { teamTwoName: CCC_NAME }],
+      OR: cccMatchOr,
       NOT: { result: { contains: "Abandon", mode: "insensitive" } },
     },
     orderBy: [{ lastUpdated: "desc" }, { id: "desc" }],
@@ -38,7 +38,7 @@ export async function getRecentResults(limit = 6): Promise<RecentResult[]> {
     .slice(0, limit);
 
   return matches.map((m) => {
-    const cccIsT1 = m.teamOneName === CCC_NAME;
+    const cccIsT1 = isCCCSide(m.teamOneName, m.teamOneId);
     const score = (t: number | null, w: number | null) => `${t ?? 0}/${w ?? 0}`;
     const cccWon =
       m.winner != null &&

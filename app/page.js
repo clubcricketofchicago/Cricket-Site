@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState, Suspense, Fragment } from "react";
+import { useEffect, useState, Fragment } from "react";
 import HeroBanner from "./components/ui/HeroBanner";
 import RecentResults from "./components/ui/RecentResults";
 import NewSeasonCounter from "./components/ui/NewSeasonCounter";

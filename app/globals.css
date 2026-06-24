@@ -2012,8 +2012,8 @@ div.POTW_text_overlay
 {
     background-repeat: no-repeat;
     background-size: cover;
-    width: 100%;  
-    background-color: var(--ink);     
+    width: 100%;
+    background-color: var(--ink);
     text-align: center;
     padding:0.8vw 0vw;
     border-top: 2px solid var(--orange);

@@ -3,31 +3,11 @@
 // page renders identically while sourced from CricClubs. See REBUILD_PLAN §12.
 
 import { unstable_cache } from "next/cache";
-import { Prisma } from "@prisma/client";
 import { prisma } from "../db/prisma";
-import { TRACKED_SERIES, CCC_ALT_TEAM_IDS } from "../cricclubs/config";
+import { TRACKED_SERIES } from "../cricclubs/config";
+import { CCC_NAME, isCCCName, isCCCSide, cccMatchOr } from "./ccc";
 
 const IMG = "https://media.cricclubs.com";
-const CCC_NAME = "Club Cricket of Chicago";
-
-// CCC competes under a few team names ("Club Cricket of Chicago", "...Seekers",
-// "CCC Stars"); identify CCC by any of those names, or by id for the variant teams.
-const isCCCName = (n?: string | null) => {
-  const s = (n ?? "").trim().toLowerCase();
-  return s.startsWith("club cricket of chicago") || s === "ccc stars";
-};
-const isCCCSide = (name?: string | null, id?: number | null) =>
-  isCCCName(name) || (id != null && CCC_ALT_TEAM_IDS.includes(id));
-const CCC_MATCH_OR: Prisma.MatchWhereInput[] = [
-  { teamOneName: CCC_NAME },
-  { teamTwoName: CCC_NAME },
-  { teamOneName: "Club Cricket Of Chicago Seekers" },
-  { teamTwoName: "Club Cricket Of Chicago Seekers" },
-  { teamOneName: "CCC Stars" },
-  { teamTwoName: "CCC Stars" },
-  { teamOneId: { in: CCC_ALT_TEAM_IDS } },
-  { teamTwoId: { in: CCC_ALT_TEAM_IDS } },
-];
 
 const img = (p?: string | null) =>
   p ? `${IMG}${p.startsWith("/") ? p : `/${p}`}` : "";
@@ -68,7 +48,7 @@ async function buildDetail(series: { id: number; name: string; year: string }) {
         where: {
           seriesId,
           isComplete: true,
-          OR: CCC_MATCH_OR,
+          OR: cccMatchOr,
         },
         orderBy: [{ lastUpdated: "desc" }, { id: "desc" }],
         take: 20,

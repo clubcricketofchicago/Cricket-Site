@@ -36,7 +36,7 @@ export default function BGWithForm() {
           }
         }
       },
-      (error) => {
+      () => {
       }
     );
   }

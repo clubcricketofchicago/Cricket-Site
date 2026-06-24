@@ -66,6 +66,7 @@ export async function syncSeries(): Promise<number> {
 export async function syncFixtures(): Promise<number> {
   const data = await getSchedule();
   const list = data?.fixtureList ?? [];
+  const seenIds: number[] = [];
   for (const f of list) {
     const payload = {
       seriesId: num(f.seriesId),
@@ -92,6 +93,17 @@ export async function syncFixtures(): Promise<number> {
       create: { id: f.fixtureId, ...payload },
       update: payload,
     });
+    seenIds.push(f.fixtureId);
+  }
+
+  // Reconcile against the feed. getSchedule() returns CCC's COMPLETE set of currently
+  // scheduled (unplayed) fixtures, so any stored fixture no longer in it has been played
+  // (it moves to the match/results table) or cancelled. Drop those stale rows — without
+  // this a fixture keeps matchId=0 forever and shows as "upcoming" indefinitely. A failed
+  // feed call throws above; we still guard the empty case so a fluke empty payload can't
+  // wipe the whole table (it would self-heal on the next sync anyway).
+  if (seenIds.length > 0) {
+    await prisma.fixture.deleteMany({ where: { id: { notIn: seenIds } } });
   }
   return list.length;
 }
