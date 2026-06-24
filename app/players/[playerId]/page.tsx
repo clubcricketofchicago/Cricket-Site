@@ -104,7 +104,7 @@ export default function PlayerProfile() {
     );
 
   return (
-    <section className="base_paddings py-[8vw] lg:py-[3vw]">
+    <section className="base_paddings pt-[100px] pb-[8vw] lg:pt-[136px] lg:pb-[3vw]">
       <div className="max_content center_aligned mx-auto">
         <Link
           href="/players"

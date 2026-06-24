@@ -261,7 +261,7 @@ export default function MatchCentre() {
     );
 
   return (
-    <section className="base_paddings py-[8vw] lg:py-[3vw]">
+    <section className="base_paddings pt-[100px] pb-[8vw] lg:pt-[136px] lg:pb-[3vw]">
       <div className="max_content center_aligned mx-auto">
         <div className="bg-gradient-to-r from-[#10131c] to-[#181c28]/40 rounded-[3vw] lg:rounded-[0.8vw] border border-[#D2A357]/20 p-[6vw] lg:p-[1.8vw] mb-[6vw] lg:mb-[2vw]">
           {m.seriesName ? (
