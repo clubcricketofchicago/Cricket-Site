@@ -61,20 +61,20 @@ export default function Page() {
   };
 
   return (
-    <section className="w-full h-auto bg-repeat-y bg-[100%] aspect-[16/9]">
-      <div className="min-h-screen py-20 text-white">
-        <Suspense
-          fallback={
-            <div className="container mx-auto text-center">Loading matches...</div>
-          }
-        >
-          {/* Pass just the first (earliest) upcoming match to UpcomingMatchPanel */}
-          <UpcomingMatchPanel match={filteredEntries[0]} />
+    // No forced height: the old `min-h-screen` + `aspect-[16/9]` padded the page out
+    // to a full viewport and exposed a big empty band below the short calendar.
+    <div className="py-20 text-white">
+      <Suspense
+        fallback={
+          <div className="container mx-auto text-center">Loading matches...</div>
+        }
+      >
+        {/* Pass just the first (earliest) upcoming match to UpcomingMatchPanel */}
+        <UpcomingMatchPanel match={filteredEntries[0]} />
 
-          {/* Pass the full list of upcoming matches to DateCalendar */}
-          <DateCalendar matches={filteredMatches} />
-        </Suspense>
-      </div>
-    </section>
+        {/* Pass the full list of upcoming matches to DateCalendar */}
+        <DateCalendar matches={filteredMatches} />
+      </Suspense>
+    </div>
   );
 }
