@@ -2112,32 +2112,62 @@ div.NZ_NT_tabList_parent .react-tabs__tab:focus:after
 {
     height: 0px;
 }
-div.NZNT_table table 
+div.NZNT_table table
 {
     width:100%;
- 
-    background-color: #414141;
+    background-color: #10131c;
     border-radius: 0px 0px 18px 18px;
     padding-bottom: 3%;
-    
+    overflow: hidden;
+    /* Tabular figures so digits line up vertically across stat columns. */
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
 }
-div.NZNT_table table thead th 
+div.NZNT_table table thead th
 {
-    
-    padding: 1% 0;
-    border-bottom:1.8px solid #272727;
+    padding: 1.15% 0;
+    color: #D2A357;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    font-weight: 700;
+    border-bottom: 1.5px solid rgba(210, 163, 87, 0.28);
 }
 div.NZNT_table table thead th.border_th
 {
-    border-left:1.8px solid #272727;
-    
-} 
-div.NZNT_table table tbody td 
+    border-left: 1.5px solid rgba(255, 255, 255, 0.06);
+}
+div.NZNT_table table tbody td
 {
-    
-    padding: 1% 0;
+    padding: 1.05% 0;
     text-align: center;
-    border-bottom:1.8px solid #272727;
+    color: #cfd2d8;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+/* Readability: numbers right-align (4th column onward); #/Rank stay centered and
+   Player stays left via their inline text-align. Zebra + hover aid horizontal scanning. */
+div.NZNT_table table thead th:nth-child(n+4),
+div.NZNT_table table tbody td:nth-child(n+4)
+{
+    text-align: right;
+    padding-right: 1.5%;
+}
+div.NZNT_table table thead th:nth-child(3),
+div.NZNT_table table tbody td:nth-child(3)
+{
+    padding-left: 1.2%;
+}
+div.NZNT_table table tbody td:nth-child(3)
+{
+    color: #ffffff;
+    font-weight: 600;
+}
+div.NZNT_table table tbody tr:nth-child(even) td
+{
+    background-color: rgba(255, 255, 255, 0.022);
+}
+div.NZNT_table table tbody tr:hover td
+{
+    background-color: rgba(210, 163, 87, 0.10);
 }
 
 
