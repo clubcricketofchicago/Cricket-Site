@@ -62,8 +62,14 @@ function Slider({ onSetSlideIndex, sliderImagesRows }) {
   )
 }
 
+// Names to hide from the management carousel (left the club / no longer listed).
+const HIDDEN_MANAGEMENT = ['asfand', 'anish']
+
 export default function MeetSquad({ data }) {
-  const managementData = (data && data.managementPlayerBlocks) || []
+  const managementData = ((data && data.managementPlayerBlocks) || []).filter((p) => {
+    const name = (p?.title || '').toLowerCase()
+    return !HIDDEN_MANAGEMENT.some((h) => name.includes(h))
+  })
   const [slideIndex, setSlideIndex] = useState(0)
   const [isDesktop, setIsDesktop] = useState(false)
 

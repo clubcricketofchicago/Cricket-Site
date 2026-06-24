@@ -28,7 +28,7 @@ function SeriesCard({ imageUrl, seriesName, hyperLink }) {
           alt={`${seriesName} Flag Image`}
           unoptimized
         />
-        <h4 className="roboto-condensed-med p1 text-white text-center uppercase mt-[2%]">
+        <h4 className="roboto-condensed-med p1 text-[color:var(--text)] text-center uppercase mt-[2%]">
           {seriesName}
         </h4>
       </Link>
@@ -82,9 +82,9 @@ export default function Page() {
 
   return (
     <section className="allPlayersPanel_header base_paddings">
-      <div className="LSC_parent PlayersPage center_aligned px-[3.5%] py-[2%] bg-white/10 backdrop-blur-sm rounded-[2vw] pb-[6vw]">
+      <div className="LSC_parent PlayersPage center_aligned px-[3.5%] py-[2%] bg-[var(--panel)] border border-[var(--panel-line)] rounded-[2vw] pb-[6vw]">
         <SectionTitleEle>{title}</SectionTitleEle>
-        <hr className="w-full h-[0.1vw] bg-[#FFFFFF] border-none" />
+        <hr className="w-full h-[0.1vw] bg-[var(--panel-line-strong)] border-none" />
         <div className="grid grid-cols-4 gap-[8vw] mt-[5%]">
           {entries.map((entry) => (
             

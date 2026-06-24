@@ -71,7 +71,7 @@ export default function FixturesGrid({ data }) {
           <div className="flex justify-center mt-0 gap-[8vw]">
             <button
               onClick={handlePrev}
-              className="w-10 h-10 flex items-center justify-center rounded-full border border-[#D2A357] text-white"
+              className="w-10 h-10 flex items-center justify-center rounded-full border border-[var(--panel-line-strong)] text-[color:var(--text)] hover:border-[var(--orange)] hover:text-[color:var(--orange)] transition-colors"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -86,7 +86,7 @@ export default function FixturesGrid({ data }) {
             </button>
             <button
               onClick={handleNext}
-              className="w-10 h-10 flex items-center justify-center rounded-full border border-[#D2A357] text-white"
+              className="w-10 h-10 flex items-center justify-center rounded-full border border-[var(--panel-line-strong)] text-[color:var(--text)] hover:border-[var(--orange)] hover:text-[color:var(--orange)] transition-colors"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -104,7 +104,7 @@ export default function FixturesGrid({ data }) {
 
         <div className="text-center mt-8">
           <Link href="/schedule">
-            <button className="px-6 py-2 bg-gradient-to-b from-[#8F5F1F] via-[#D4A845] to-[#8F5F1F] bg-[length:100%_100%] rounded-full text-black roboto-condensed-regular p2 transition-colors">
+            <button className="ccc-btn ccc-btn-primary px-6 py-2 rounded-full roboto-condensed-regular p2">
               View all
             </button>
           </Link>

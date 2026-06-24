@@ -29,9 +29,28 @@ export const TRACKED_SERIES: { id: number; name: string; year: string }[] = [
   // 2024 — published on the existing site:
   { id: 300, name: "Master Royal Red Ball 2024", year: "2024" },
   { id: 312, name: "Master Royal RedBall 2024 Playoffs", year: "2024" },
+  // 2024 — additional CCC divisions (CCC plays under alternate team names here):
+  { id: 298, name: "Elite 3030 2024", year: "2024" },
+  { id: 303, name: "Midwest Premier League 2024", year: "2024" },
+  // 2023 — historical:
+  { id: 279, name: "Master Royal Red Ball 2023", year: "2023" },
+  { id: 284, name: "USA T-10 Cup 2023", year: "2023" },
+  // 2022 — historical (earliest CCC season on CricClubs):
+  { id: 266, name: "RedBall T30 2022", year: "2022" },
 ];
 
 export const TRACKED_SERIES_IDS = TRACKED_SERIES.map((s) => s.id);
 
 /** Club Cricket of Chicago's own team entries — one per Summer 2026 division. */
 export const CCC_TEAM_IDS = [2677, 2686, 2714];
+
+/**
+ * CCC competes under different team NAMES in some series — e.g. "Club Cricket Of
+ * Chicago Seekers" (Elite 3030 2024) and "CCC Stars" (Midwest Premier League 2024).
+ * Most series use the exact name "Club Cricket of Chicago"; for the ones that don't,
+ * we identify CCC's team by id instead.
+ */
+export const CCC_ALT_TEAM_IDS = [
+  2186, // Elite 3030 2024 — "Club Cricket Of Chicago Seekers"
+  2240, // Midwest Premier League 2024 — "CCC Stars"
+];

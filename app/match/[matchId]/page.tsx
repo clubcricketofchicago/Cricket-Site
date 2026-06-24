@@ -72,7 +72,7 @@ interface MatchCard {
 function Th({ children, right = false }: { children: ReactNode; right?: boolean }) {
   return (
     <th
-      className={`roboto-condensed-bold text-[#D2A357] uppercase px-[2vw] lg:px-[0.7vw] py-[2vw] lg:py-[0.6vw] text-[2.5vw] lg:text-[0.74vw] whitespace-nowrap ${
+      className={`roboto-condensed-bold text-[color:var(--text-muted)] uppercase px-[2vw] lg:px-[0.7vw] py-[2vw] lg:py-[0.6vw] text-[2.5vw] lg:text-[0.74vw] whitespace-nowrap ${
         right ? "text-right" : "text-left"
       }`}
     >
@@ -84,7 +84,7 @@ function Num({ children, lead = false }: { children: ReactNode; lead?: boolean }
   return (
     <td
       className={`text-right px-[2vw] lg:px-[0.7vw] py-[2vw] lg:py-[0.5vw] text-[2.8vw] lg:text-[0.85vw] whitespace-nowrap ${
-        lead ? "roboto-condensed-bold text-white" : "roboto-condensed-regular text-[#9a9a9a]"
+        lead ? "roboto-condensed-bold text-[color:var(--text)]" : "roboto-condensed-regular text-[color:var(--text-muted)]"
       }`}
     >
       {children}
@@ -109,14 +109,14 @@ function InningsCard({ inn }: { inn: Innings }) {
     .join("   ");
 
   return (
-    <div className="bg-[#10131c] rounded-[2.5vw] lg:rounded-[0.7vw] border border-[#D2A357]/20 overflow-hidden mb-[5vw] lg:mb-[1.6vw]">
-      <div className="flex items-center justify-between bg-[#181c28] px-[4vw] lg:px-[1.3vw] py-[3vw] lg:py-[0.9vw]">
-        <p className="roboto-condensed-bold text-white uppercase text-[4vw] lg:text-[1.1vw]">
+    <div className="bg-[var(--panel)] rounded-[2.5vw] lg:rounded-[0.7vw] border border-[var(--panel-line)] overflow-hidden mb-[5vw] lg:mb-[1.6vw]">
+      <div className="flex items-center justify-between bg-[var(--panel-2)] px-[4vw] lg:px-[1.3vw] py-[3vw] lg:py-[0.9vw]">
+        <p className="roboto-condensed-bold text-[color:var(--text)] uppercase text-[4vw] lg:text-[1.1vw]">
           {inn.teamName}
         </p>
-        <p className="oswald-bold text-[#D2A357] text-[5vw] lg:text-[1.5vw] leading-none">
+        <p className="oswald-bold text-[color:var(--orange)] text-[5vw] lg:text-[1.5vw] leading-none">
           {inn.total}/{inn.wickets}
-          <span className="roboto-condensed-regular text-[#9a9a9a] text-[3vw] lg:text-[0.8vw] ml-[1.5vw] lg:ml-[0.4vw]">
+          <span className="roboto-condensed-regular text-[color:var(--text-muted)] text-[3vw] lg:text-[0.8vw] ml-[1.5vw] lg:ml-[0.4vw]">
             ({inn.overs} ov)
           </span>
         </p>
@@ -126,7 +126,7 @@ function InningsCard({ inn }: { inn: Innings }) {
       <div className="overflow-x-auto">
         <table className="min-w-full">
           <thead>
-            <tr className="border-b border-white/10">
+            <tr className="bg-[var(--panel-2)] border-b border-[var(--panel-line)]">
               <Th>Batting</Th>
               <Th right>R</Th>
               <Th right>B</Th>
@@ -137,13 +137,13 @@ function InningsCard({ inn }: { inn: Innings }) {
           </thead>
           <tbody>
             {inn.batting.map((b, i) => (
-              <tr key={i} className="border-b border-white/5">
+              <tr key={i} className="bg-[var(--panel)] border-b border-[var(--panel-line)]">
                 <td className="px-[2vw] lg:px-[0.7vw] py-[2vw] lg:py-[0.5vw]">
-                  <p className="roboto-condensed-bold text-white text-[3.2vw] lg:text-[0.9vw]">
+                  <p className="roboto-condensed-bold text-[color:var(--text)] text-[3.2vw] lg:text-[0.9vw]">
                     {b.name}
-                    {b.notOut ? <span className="text-[#5fcf9e]"> *</span> : null}
+                    {b.notOut ? <span className="text-[color:var(--win)]"> *</span> : null}
                   </p>
-                  <p className="roboto-condensed-regular text-[#7d7d7d] text-[2.6vw] lg:text-[0.72vw]">
+                  <p className="roboto-condensed-regular text-[color:var(--text-dim)] text-[2.6vw] lg:text-[0.72vw]">
                     {b.dismissal}
                   </p>
                 </td>
@@ -159,39 +159,39 @@ function InningsCard({ inn }: { inn: Innings }) {
       </div>
 
       {/* Extras + Total + DNB + FoW */}
-      <div className="px-[4vw] lg:px-[1.3vw] py-[3vw] lg:py-[1vw] border-t border-white/10">
+      <div className="px-[4vw] lg:px-[1.3vw] py-[3vw] lg:py-[1vw] border-t border-[var(--panel-line)]">
         <div className="flex justify-between items-baseline">
-          <span className="roboto-condensed-regular text-[#cfcfcf] text-[3vw] lg:text-[0.85vw]">
+          <span className="roboto-condensed-regular text-[color:var(--text-muted)] text-[3vw] lg:text-[0.85vw]">
             Extras
             {exParts ? (
-              <span className="text-[#7d7d7d]"> ({exParts})</span>
+              <span className="text-[color:var(--text-dim)]"> ({exParts})</span>
             ) : null}
           </span>
-          <span className="roboto-condensed-bold text-white text-[3.2vw] lg:text-[0.9vw]">
+          <span className="roboto-condensed-bold text-[color:var(--text)] text-[3.2vw] lg:text-[0.9vw]">
             {ex.total}
           </span>
         </div>
-        <div className="flex justify-between items-baseline mt-[2vw] lg:mt-[0.6vw] pt-[2vw] lg:pt-[0.6vw] border-t border-white/10">
-          <span className="roboto-condensed-bold text-white uppercase text-[3.2vw] lg:text-[0.95vw]">
+        <div className="flex justify-between items-baseline mt-[2vw] lg:mt-[0.6vw] pt-[2vw] lg:pt-[0.6vw] border-t border-[var(--panel-line)]">
+          <span className="roboto-condensed-bold text-[color:var(--text)] uppercase text-[3.2vw] lg:text-[0.95vw]">
             Total
-            <span className="roboto-condensed-regular text-[#9a9a9a] normal-case">
+            <span className="roboto-condensed-regular text-[color:var(--text-muted)] normal-case">
               {" "}
               ({inn.overs} ov{inn.runRate ? `, RR ${inn.runRate}` : ""})
             </span>
           </span>
-          <span className="oswald-bold text-[#D2A357] text-[4.5vw] lg:text-[1.3vw]">
+          <span className="oswald-bold text-[color:var(--orange)] text-[4.5vw] lg:text-[1.3vw]">
             {inn.total}/{inn.wickets}
           </span>
         </div>
         {inn.didNotBat.length > 0 ? (
-          <p className="roboto-condensed-regular text-[#9a9a9a] text-[2.8vw] lg:text-[0.8vw] mt-[3vw] lg:mt-[0.8vw]">
-            <span className="text-[#7d7d7d]">Did not bat: </span>
+          <p className="roboto-condensed-regular text-[color:var(--text-muted)] text-[2.8vw] lg:text-[0.8vw] mt-[3vw] lg:mt-[0.8vw]">
+            <span className="text-[color:var(--text-dim)]">Did not bat: </span>
             {inn.didNotBat.join(", ")}
           </p>
         ) : null}
         {fow ? (
-          <p className="roboto-condensed-regular text-[#9a9a9a] text-[2.8vw] lg:text-[0.8vw] mt-[2vw] lg:mt-[0.5vw]">
-            <span className="text-[#7d7d7d]">Fall of wickets: </span>
+          <p className="roboto-condensed-regular text-[color:var(--text-muted)] text-[2.8vw] lg:text-[0.8vw] mt-[2vw] lg:mt-[0.5vw]">
+            <span className="text-[color:var(--text-dim)]">Fall of wickets: </span>
             {fow}
           </p>
         ) : null}
@@ -199,10 +199,10 @@ function InningsCard({ inn }: { inn: Innings }) {
 
       {/* Bowling */}
       {inn.bowling.length > 0 ? (
-        <div className="overflow-x-auto border-t border-white/10">
+        <div className="overflow-x-auto border-t border-[var(--panel-line)]">
           <table className="min-w-full">
             <thead>
-              <tr className="border-b border-white/10">
+              <tr className="bg-[var(--panel-2)] border-b border-[var(--panel-line)]">
                 <Th>Bowling</Th>
                 <Th right>O</Th>
                 <Th right>M</Th>
@@ -213,8 +213,8 @@ function InningsCard({ inn }: { inn: Innings }) {
             </thead>
             <tbody>
               {inn.bowling.map((b, i) => (
-                <tr key={i} className="border-b border-white/5">
-                  <td className="px-[2vw] lg:px-[0.7vw] py-[2vw] lg:py-[0.5vw] roboto-condensed-bold text-white text-[3.2vw] lg:text-[0.9vw]">
+                <tr key={i} className="bg-[var(--panel)] border-b border-[var(--panel-line)]">
+                  <td className="px-[2vw] lg:px-[0.7vw] py-[2vw] lg:py-[0.5vw] roboto-condensed-bold text-[color:var(--text)] text-[3.2vw] lg:text-[0.9vw]">
                     {b.name}
                   </td>
                   <Num>{b.overs}</Num>
@@ -253,8 +253,8 @@ export default function MatchCentre() {
   if (!m || m.error || !m.found || m.innings.length === 0)
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
-        <p className="roboto-condensed-regular text-white p3">Scorecard unavailable for this match.</p>
-        <Link href="/" className="roboto-condensed-bold text-[#D2A357] uppercase hover:underline">
+        <p className="roboto-condensed-regular text-[color:var(--text)] p3">Scorecard unavailable for this match.</p>
+        <Link href="/" className="roboto-condensed-bold text-[color:var(--orange)] uppercase hover:underline">
           ← Home
         </Link>
       </div>
@@ -263,37 +263,37 @@ export default function MatchCentre() {
   return (
     <section className="base_paddings pt-[100px] pb-[8vw] lg:pt-[136px] lg:pb-[3vw]">
       <div className="max_content center_aligned mx-auto">
-        <div className="bg-gradient-to-r from-[#10131c] to-[#181c28]/40 rounded-[3vw] lg:rounded-[0.8vw] border border-[#D2A357]/20 p-[6vw] lg:p-[1.8vw] mb-[6vw] lg:mb-[2vw]">
+        <div className="ccc-card bg-[var(--panel)] rounded-[3vw] lg:rounded-[0.8vw] border border-[var(--panel-line)] p-[6vw] lg:p-[1.8vw] mb-[6vw] lg:mb-[2vw]">
           {m.seriesName ? (
-            <p className="roboto-condensed-bold text-[#D2A357] uppercase tracking-wider text-[3vw] lg:text-[0.85vw] text-center mb-[3vw] lg:mb-[1vw]">
+            <p className="roboto-condensed-bold text-[color:var(--orange)] uppercase tracking-wider text-[3vw] lg:text-[0.85vw] text-center mb-[3vw] lg:mb-[1vw]">
               {m.seriesName}
             </p>
           ) : null}
           <div className="flex items-center justify-center gap-[5vw] lg:gap-[2.5vw]">
             <div className="flex flex-col items-center gap-[2vw] lg:gap-[0.6vw] w-[30%]">
-              <div className="relative w-[16vw] h-[16vw] lg:w-[4.5vw] lg:h-[4.5vw] rounded-full overflow-hidden bg-[#222]">
+              <div className="relative w-[16vw] h-[16vw] lg:w-[4.5vw] lg:h-[4.5vw] rounded-full overflow-hidden bg-[rgba(255,255,255,0.04)] border border-[var(--panel-line-strong)]">
                 <Image src={m.teamOneLogo || "/images/placeholder_logo.png"} alt={m.teamOne} fill sizes="72px" className="object-contain" unoptimized />
               </div>
-              <p className="roboto-condensed-bold text-white text-center uppercase text-[3vw] lg:text-[0.9vw] leading-tight">
+              <p className="roboto-condensed-bold text-[color:var(--text)] text-center uppercase text-[3vw] lg:text-[0.9vw] leading-tight">
                 {m.teamOne}
               </p>
             </div>
-            <span className="oswald-bold text-[#D2A357] text-[5vw] lg:text-[1.6vw]">VS</span>
+            <span className="oswald-bold text-[color:var(--orange)] text-[5vw] lg:text-[1.6vw]">VS</span>
             <div className="flex flex-col items-center gap-[2vw] lg:gap-[0.6vw] w-[30%]">
-              <div className="relative w-[16vw] h-[16vw] lg:w-[4.5vw] lg:h-[4.5vw] rounded-full overflow-hidden bg-[#222]">
+              <div className="relative w-[16vw] h-[16vw] lg:w-[4.5vw] lg:h-[4.5vw] rounded-full overflow-hidden bg-[rgba(255,255,255,0.04)] border border-[var(--panel-line-strong)]">
                 <Image src={m.teamTwoLogo || "/images/placeholder_logo.png"} alt={m.teamTwo} fill sizes="72px" className="object-contain" unoptimized />
               </div>
-              <p className="roboto-condensed-bold text-white text-center uppercase text-[3vw] lg:text-[0.9vw] leading-tight">
+              <p className="roboto-condensed-bold text-[color:var(--text)] text-center uppercase text-[3vw] lg:text-[0.9vw] leading-tight">
                 {m.teamTwo}
               </p>
             </div>
           </div>
           {m.result ? (
-            <p className="roboto-condensed-bold text-[#5fcf9e] text-center text-[3.4vw] lg:text-[1vw] mt-[4vw] lg:mt-[1.2vw]">
+            <p className="roboto-condensed-bold text-[color:var(--win)] text-center text-[3.4vw] lg:text-[1vw] mt-[4vw] lg:mt-[1.2vw]">
               {m.result}
             </p>
           ) : null}
-          <p className="roboto-condensed-regular text-[#9a9a9a] text-center text-[2.8vw] lg:text-[0.8vw] mt-[2vw] lg:mt-[0.5vw]">
+          <p className="roboto-condensed-regular text-[color:var(--text-muted)] text-center text-[2.8vw] lg:text-[0.8vw] mt-[2vw] lg:mt-[0.5vw]">
             {[m.date, m.location].filter(Boolean).join(" · ")}
           </p>
         </div>

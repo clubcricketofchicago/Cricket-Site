@@ -3,11 +3,31 @@
 // page renders identically while sourced from CricClubs. See REBUILD_PLAN §12.
 
 import { unstable_cache } from "next/cache";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../db/prisma";
-import { TRACKED_SERIES } from "../cricclubs/config";
+import { TRACKED_SERIES, CCC_ALT_TEAM_IDS } from "../cricclubs/config";
 
 const IMG = "https://media.cricclubs.com";
 const CCC_NAME = "Club Cricket of Chicago";
+
+// CCC competes under a few team names ("Club Cricket of Chicago", "...Seekers",
+// "CCC Stars"); identify CCC by any of those names, or by id for the variant teams.
+const isCCCName = (n?: string | null) => {
+  const s = (n ?? "").trim().toLowerCase();
+  return s.startsWith("club cricket of chicago") || s === "ccc stars";
+};
+const isCCCSide = (name?: string | null, id?: number | null) =>
+  isCCCName(name) || (id != null && CCC_ALT_TEAM_IDS.includes(id));
+const CCC_MATCH_OR: Prisma.MatchWhereInput[] = [
+  { teamOneName: CCC_NAME },
+  { teamTwoName: CCC_NAME },
+  { teamOneName: "Club Cricket Of Chicago Seekers" },
+  { teamTwoName: "Club Cricket Of Chicago Seekers" },
+  { teamOneName: "CCC Stars" },
+  { teamTwoName: "CCC Stars" },
+  { teamOneId: { in: CCC_ALT_TEAM_IDS } },
+  { teamTwoId: { in: CCC_ALT_TEAM_IDS } },
+];
 
 const img = (p?: string | null) =>
   p ? `${IMG}${p.startsWith("/") ? p : `/${p}`}` : "";
@@ -48,7 +68,7 @@ async function buildDetail(series: { id: number; name: string; year: string }) {
         where: {
           seriesId,
           isComplete: true,
-          OR: [{ teamOneName: CCC_NAME }, { teamTwoName: CCC_NAME }],
+          OR: CCC_MATCH_OR,
         },
         orderBy: [{ lastUpdated: "desc" }, { id: "desc" }],
         take: 20,
@@ -65,7 +85,7 @@ async function buildDetail(series: { id: number; name: string; year: string }) {
 
   // Restrict player tables / Player of the Week to Club Cricket of Chicago.
   const isCCC = <T extends { teamName: string | null }>(r: T) =>
-    r.teamName === CCC_NAME;
+    isCCCName(r.teamName);
   const batting = allBatting.filter(isCCC);
   const bowling = allBowling.filter(isCCC);
   const fielding = allFielding.filter(isCCC);
@@ -130,24 +150,34 @@ async function buildDetail(series: { id: number; name: string; year: string }) {
   // per series, so match by name). Non-CCC matches fall back to team-one.
   const cccWon = (m: (typeof matches)[number]) => {
     if (m.winner == null) return false;
-    if (m.teamOneName === CCC_NAME) return m.winner === m.teamOneId;
-    if (m.teamTwoName === CCC_NAME) return m.winner === m.teamTwoId;
+    if (isCCCSide(m.teamOneName, m.teamOneId)) return m.winner === m.teamOneId;
+    if (isCCCSide(m.teamTwoName, m.teamTwoId)) return m.winner === m.teamTwoId;
     return m.winner === m.teamOneId;
   };
 
   // resultCards -> ResultItem[]
-  const resultCards = matches.map((m) => ({
-    id: m.id,
-    title: m.result ?? "",
-    lightswitch: cccWon(m),
-    date: m.matchDate ?? "",
-    t1Score: `${m.t1Total ?? 0}/${m.t1Wickets ?? 0}`,
-    t1Overs: oversFromBalls(m.t1Balls),
-    teamOneLogo: [{ url: img(m.teamOneLogo) }],
-    t2Score: `${m.t2Total ?? 0}/${m.t2Wickets ?? 0}`,
-    t2Overs: oversFromBalls(m.t2Balls),
-    teamTwoLogo: [{ url: img(m.teamTwoLogo) }],
-  }));
+  const resultCards = matches.map((m) => {
+    const cccIsT1 = isCCCSide(m.teamOneName, m.teamOneId);
+    const t1 = `${m.t1Total ?? 0}/${m.t1Wickets ?? 0}`;
+    const t2 = `${m.t2Total ?? 0}/${m.t2Wickets ?? 0}`;
+    return {
+      id: m.id,
+      title: m.result ?? "",
+      lightswitch: cccWon(m),
+      date: m.matchDate ?? "",
+      t1Score: t1,
+      t1Overs: oversFromBalls(m.t1Balls),
+      teamOneLogo: [{ url: img(m.teamOneLogo) }],
+      t2Score: t2,
+      t2Overs: oversFromBalls(m.t2Balls),
+      teamTwoLogo: [{ url: img(m.teamTwoLogo) }],
+      // opponent-centric fields so results can render like the fixtures cards
+      opponentName: (cccIsT1 ? m.teamTwoName : m.teamOneName) ?? "Opponent",
+      opponentLogo: [{ url: img(cccIsT1 ? m.teamTwoLogo : m.teamOneLogo) }],
+      cccScore: cccIsT1 ? t1 : t2,
+      oppScore: cccIsT1 ? t2 : t1,
+    };
+  });
 
   // Number Zone — RAW row shape (NumberZone splits `player` and renames short codes)
   const battingNumberZone = batting.map((b) => ({
@@ -233,7 +263,7 @@ async function buildDetail(series: { id: number; name: string; year: string }) {
     .map((e) => ({ ...e, total: e.batting + e.bowling + e.fielding }))
     .sort((a, b) => b.total - a.total)
     .map((e, i) => ({ ...e, leagueRank: i + 1 }))
-    .filter((e) => e.teamName === CCC_NAME)
+    .filter((e) => isCCCName(e.teamName))
     .map((e) => ({
       player: e.name,
       battingPoints: Math.round(e.batting),
@@ -304,6 +334,7 @@ async function buildFixtureEntries(slug: string): Promise<{ entries: Entry[] }> 
     where: {
       seriesId,
       matchId: 0,
+      // upcoming fixtures are current-season only, where CCC uses its exact name
       OR: [{ teamOneName: CCC_NAME }, { teamTwoName: CCC_NAME }],
     },
     orderBy: [{ matchDateTime: "asc" }, { id: "asc" }],

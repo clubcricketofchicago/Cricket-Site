@@ -22,12 +22,12 @@ function TournamentCard({ seriesName, year, hyperLink }) {
   return (
     <Link
       href={hyperLink}
-      className="group relative block overflow-hidden rounded-[3vw] lg:rounded-[0.8vw] border border-[#D2A357]/20 bg-gradient-to-br from-[#1b2030] to-[#0e111a] p-[5vw] lg:p-[1.5vw] transition-all duration-200 hover:border-[#D2A357]/60 hover:-translate-y-[0.3vw]"
+      className="group relative block overflow-hidden rounded-[3vw] lg:rounded-[0.8vw] border border-[var(--panel-line)] bg-[var(--panel)] p-[5vw] lg:p-[1.5vw] transition-all duration-200 hover:border-[var(--orange)] hover:-translate-y-[0.3vw]"
     >
-      {/* soft gold glow on hover */}
-      <div className="pointer-events-none absolute -right-[8vw] -top-[8vw] h-[20vw] w-[20vw] lg:-right-[5vw] lg:-top-[5vw] lg:h-[10vw] lg:w-[10vw] rounded-full bg-[#D2A357]/10 opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100" />
+      {/* soft accent glow on hover */}
+      <div className="pointer-events-none absolute -right-[8vw] -top-[8vw] h-[20vw] w-[20vw] lg:-right-[5vw] lg:-top-[5vw] lg:h-[10vw] lg:w-[10vw] rounded-full bg-[var(--glow)] opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100" />
 
-      <span className="inline-block rounded-full bg-[#D2A357]/12 px-[3vw] py-[1vw] lg:px-[0.8vw] lg:py-[0.28vw] text-[2.8vw] lg:text-[0.7vw] uppercase tracking-wider roboto-condensed-bold text-[#D2A357]">
+      <span className="inline-block rounded-full bg-[var(--glow)] px-[3vw] py-[1vw] lg:px-[0.8vw] lg:py-[0.28vw] text-[2.8vw] lg:text-[0.7vw] uppercase tracking-wider roboto-condensed-bold text-[color:var(--orange)]">
         {formatTag(seriesName)}
       </span>
 
@@ -35,16 +35,16 @@ function TournamentCard({ seriesName, year, hyperLink }) {
         <div className="relative h-[13vw] w-[13vw] shrink-0 lg:h-[3.4vw] lg:w-[3.4vw]">
           <Image src="/images/logo.png" alt="Club Cricket of Chicago" fill className="object-contain" unoptimized />
         </div>
-        <h3 className="roboto-condensed-bold uppercase leading-tight text-white text-[4.2vw] lg:text-[1.08vw]">
+        <h3 className="roboto-condensed-bold uppercase leading-tight text-[color:var(--text)] text-[4.2vw] lg:text-[1.08vw]">
           {seriesName}
         </h3>
       </div>
 
-      <div className="mt-[5vw] lg:mt-[1.4vw] flex items-center justify-between border-t border-white/10 pt-[4vw] lg:pt-[1vw]">
-        <span className="roboto-condensed-regular text-[#9a9a9a] text-[3.2vw] lg:text-[0.82vw]">
+      <div className="mt-[5vw] lg:mt-[1.4vw] flex items-center justify-between border-t border-[var(--panel-line)] pt-[4vw] lg:pt-[1vw]">
+        <span className="roboto-condensed-regular text-[color:var(--text-muted)] text-[3.2vw] lg:text-[0.82vw]">
           {year} Season
         </span>
-        <span className="roboto-condensed-bold uppercase text-[#D2A357] text-[3.2vw] lg:text-[0.82vw] transition-transform duration-200 group-hover:translate-x-[1vw] lg:group-hover:translate-x-[0.3vw]">
+        <span className="roboto-condensed-bold uppercase text-[color:var(--orange)] text-[3.2vw] lg:text-[0.82vw] transition-transform duration-200 group-hover:translate-x-[1vw] lg:group-hover:translate-x-[0.3vw]">
           View &rarr;
         </span>
       </div>
@@ -86,17 +86,17 @@ export default function Page() {
       <div className="max_content center_aligned mx-auto">
         {/* Page header */}
         <div className="mb-[9vw] lg:mb-[2.6vw]">
-          <h1 className="oswald-bold uppercase leading-none text-white text-[8.5vw] lg:text-[2.6vw]">
+          <h1 className="oswald-bold uppercase leading-none text-[color:var(--text)] text-[8.5vw] lg:text-[2.6vw]">
             Tournaments
           </h1>
-          <p className="roboto-condensed-regular mt-[2.5vw] lg:mt-[0.7vw] text-[#9a9a9a] text-[3.6vw] lg:text-[1vw]">
+          <p className="roboto-condensed-regular mt-[2.5vw] lg:mt-[0.7vw] text-[color:var(--text-muted)] text-[3.6vw] lg:text-[1vw]">
             Club Cricket of Chicago&rsquo;s campaigns across the Midwest Cricket Conference.
           </p>
-          <div className="mt-[3vw] lg:mt-[1vw] h-[1vw] w-[18vw] rounded-full bg-[#D2A357] lg:h-[0.18vw] lg:w-[5vw]" />
+          <div className="mt-[3vw] lg:mt-[1vw] h-[1vw] w-[18vw] rounded-full bg-[var(--orange)] lg:h-[0.18vw] lg:w-[5vw]" />
         </div>
 
         {error ? (
-          <p className="roboto-condensed-regular text-center text-white">{error}</p>
+          <p className="roboto-condensed-regular text-center text-[color:var(--text)]">{error}</p>
         ) : loading ? (
           <div className="space-y-[8vw] lg:space-y-[2.5vw]">
             {[0, 1].map((g) => (
@@ -114,11 +114,11 @@ export default function Page() {
           groupedTournaments.map((group) => (
             <div key={group.yearSlug} className="mb-[10vw] lg:mb-[3vw]">
               <div className="mb-[5vw] lg:mb-[1.5vw] flex items-center gap-[3vw] lg:gap-[1vw]">
-                <h2 className="oswald-bold leading-none text-[#D2A357] text-[6.5vw] lg:text-[1.7vw]">
+                <h2 className="oswald-bold leading-none text-[color:var(--orange)] text-[6.5vw] lg:text-[1.7vw]">
                   {group.yearTitle}
                 </h2>
-                <div className="h-px flex-1 bg-white/10" />
-                <span className="roboto-condensed-regular text-[#7d7d7d] text-[3vw] lg:text-[0.8vw]">
+                <div className="h-px flex-1 bg-[var(--panel-line)]" />
+                <span className="roboto-condensed-regular text-[color:var(--text-dim)] text-[3vw] lg:text-[0.8vw]">
                   {group.tournaments.length} {group.tournaments.length === 1 ? 'tournament' : 'tournaments'}
                 </span>
               </div>
@@ -135,7 +135,7 @@ export default function Page() {
                   ))}
                 </div>
               ) : (
-                <p className="roboto-condensed-regular italic text-[#9a9a9a]">No tournaments found under this year.</p>
+                <p className="roboto-condensed-regular italic text-[color:var(--text-muted)]">No tournaments found under this year.</p>
               )}
             </div>
           ))

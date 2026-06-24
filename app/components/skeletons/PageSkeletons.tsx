@@ -1,6 +1,7 @@
-// Dark, branded loading skeletons shown while client-side data is fetched.
+// Theme-aware, branded loading skeletons shown while client-side data is fetched.
 // They mirror each page's real layout so the page doesn't flash empty (or a bare
-// "Loading…") on a cold load. The shimmer comes from the .ccc-skel class in globals.css.
+// "Loading…") on a cold load. The shimmer and surfaces come from token-driven
+// classes (.ccc-skel, var(--panel)/var(--panel-line)) so they match both themes.
 
 import type { CSSProperties } from "react";
 
@@ -38,7 +39,7 @@ export function PlayersGridSkeleton({ count = 12 }: { count?: number }) {
 
 function TableBlockSkeleton({ rows = 6 }: { rows?: number }) {
   return (
-    <div className="bg-[#10131c] rounded-[2.5vw] lg:rounded-[0.7vw] border border-[#D2A357]/15 p-[4vw] lg:p-[1.3vw] mb-[5vw] lg:mb-[1.6vw]">
+    <div className="bg-[var(--panel)] rounded-[2.5vw] lg:rounded-[0.7vw] border border-[var(--panel-line)] p-[4vw] lg:p-[1.3vw] mb-[5vw] lg:mb-[1.6vw]">
       <Skel className="h-[4vw] lg:h-[1.2vw] w-[40%] mb-[3vw] lg:mb-[1vw]" />
       {Array.from({ length: rows }).map((_, r) => (
         <Skel key={r} className="h-[3.2vw] lg:h-[1vw] w-full mb-[2vw] lg:mb-[0.6vw]" />
@@ -72,7 +73,7 @@ export function MatchCentreSkeleton() {
   return (
     <section className="base_paddings pt-[100px] pb-[8vw] lg:pt-[136px] lg:pb-[3vw]">
       <div className="max_content center_aligned mx-auto">
-        <div className="bg-[#10131c] rounded-[3vw] lg:rounded-[0.8vw] border border-[#D2A357]/20 p-[6vw] lg:p-[1.8vw] mb-[6vw] lg:mb-[2vw]">
+        <div className="bg-[var(--panel)] rounded-[3vw] lg:rounded-[0.8vw] border border-[var(--panel-line)] p-[6vw] lg:p-[1.8vw] mb-[6vw] lg:mb-[2vw]">
           <Skel className="h-[3vw] lg:h-[0.9vw] w-[35%] mx-auto mb-[4vw] lg:mb-[1.2vw]" />
           <div className="flex items-center justify-center gap-[5vw] lg:gap-[2.5vw]">
             <div className="flex flex-col items-center gap-[2vw] lg:gap-[0.6vw] w-[30%]">

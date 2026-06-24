@@ -3,13 +3,21 @@
 import Image from "next/image";
 import Link from "next/link";
 
+// Format the stored match date (UTC, to avoid an off-by-one day shift).
+function formatResultDate(s) {
+  if (!s) return "";
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+}
+
 export default function RecentResults({ results }) {
   if (!results || results.length === 0) return null;
 
   return (
     <section className="base_paddings recentResults relative z-[8] py-[5%] lg:py-[3%]">
       <div className="max_content center_aligned mx-auto">
-        <h2 className="text-center roboto-condensed-bold text-white uppercase text-[6vw] lg:text-[2.2vw] mb-[5%] lg:mb-[2.5%]">
+        <h2 className="text-center roboto-condensed-bold text-[color:var(--text)] uppercase text-[6vw] lg:text-[2.2vw] mb-[5%] lg:mb-[2.5%]">
           Recent Results
         </h2>
 
@@ -18,18 +26,22 @@ export default function RecentResults({ results }) {
             <Link
               key={r.id}
               href={`/match/${r.id}`}
-              className="block bg-[#181c28] rounded-[3vw] lg:rounded-[0.8vw] p-[4vw] lg:p-[1.4vw] border border-[#D2A357]/30 transition-colors hover:border-[#D2A357]/70"
+              className="ccc-card ccc-card-hover block rounded-[3vw] lg:rounded-[0.8vw] p-[4vw] lg:p-[1.4vw]"
             >
               <div className="flex justify-between items-center mb-[4%]">
-                <p className="roboto-condensed-regular text-[#D2A357] text-[3vw] lg:text-[0.85vw] truncate pr-2">
+                <p className="roboto-condensed-regular text-[color:var(--orange)] text-[3vw] lg:text-[0.85vw] truncate pr-2">
                   {r.seriesName}
                 </p>
                 <span
                   className={`roboto-condensed-bold text-white rounded-full px-[3vw] lg:px-[0.8vw] py-[0.4vw] text-[2.6vw] lg:text-[0.75vw] ${
-                    r.cccWon ? "bg-[#2e8b6f]" : "bg-[#c0392b]"
+                    /\btie(d)?\b/i.test(r.result || "")
+                      ? "bg-[var(--text-dim)]"
+                      : r.cccWon
+                      ? "bg-[var(--win)]"
+                      : "bg-[var(--loss)]"
                   }`}
                 >
-                  {r.cccWon ? "WON" : "LOST"}
+                  {/\btie(d)?\b/i.test(r.result || "") ? "TIE" : r.cccWon ? "WON" : "LOST"}
                 </span>
               </div>
 
@@ -44,25 +56,25 @@ export default function RecentResults({ results }) {
                     unoptimized
                   />
                   <div className="min-w-0">
-                    <p className="roboto-condensed-bold text-white text-[3.4vw] lg:text-[0.95vw]">
+                    <p className="roboto-condensed-bold text-[color:var(--text)] text-[3.4vw] lg:text-[0.95vw]">
                       CCC
                     </p>
-                    <p className="roboto-condensed-regular text-[#d8d8d8] text-[3vw] lg:text-[0.85vw]">
+                    <p className="roboto-condensed-regular text-[color:var(--text-muted)] text-[3vw] lg:text-[0.85vw]">
                       {r.cccScore}
                     </p>
                   </div>
                 </div>
 
-                <p className="roboto-condensed-bold text-[#D2A357] text-[3.4vw] lg:text-[1vw]">
+                <p className="roboto-condensed-bold text-[color:var(--orange)] text-[3.4vw] lg:text-[1vw]">
                   vs
                 </p>
 
                 <div className="flex items-center gap-[3%] w-[44%] justify-end text-right">
                   <div className="min-w-0">
-                    <p className="roboto-condensed-bold text-white text-[3.4vw] lg:text-[0.95vw] truncate">
+                    <p className="roboto-condensed-bold text-[color:var(--text)] text-[3.4vw] lg:text-[0.95vw] truncate">
                       {r.opponentName}
                     </p>
-                    <p className="roboto-condensed-regular text-[#d8d8d8] text-[3vw] lg:text-[0.85vw]">
+                    <p className="roboto-condensed-regular text-[color:var(--text-muted)] text-[3vw] lg:text-[0.85vw]">
                       {r.oppScore}
                     </p>
                   </div>
@@ -77,11 +89,21 @@ export default function RecentResults({ results }) {
                 </div>
               </div>
 
-              {r.result && (
-                <p className="roboto-condensed-regular text-[#d8d8d8] text-[2.8vw] lg:text-[0.8vw] mt-[4%] text-center">
-                  {r.result}
-                </p>
-              )}
+              <div className="mt-[4%] pt-[3%] border-t border-[var(--panel-line)] flex items-center justify-center gap-[2.5vw] lg:gap-[0.6vw] flex-wrap text-center">
+                {r.date && formatResultDate(r.date) && (
+                  <span className="roboto-condensed-med text-[color:var(--text)] text-[2.8vw] lg:text-[0.8vw]">
+                    {formatResultDate(r.date)}
+                  </span>
+                )}
+                {r.date && r.result && (
+                  <span className="text-[color:var(--text-dim)] text-[2.6vw] lg:text-[0.7vw]">•</span>
+                )}
+                {r.result && (
+                  <span className="roboto-condensed-regular text-[color:var(--text-muted)] text-[2.8vw] lg:text-[0.8vw]">
+                    {r.result}
+                  </span>
+                )}
+              </div>
             </Link>
           ))}
         </div>

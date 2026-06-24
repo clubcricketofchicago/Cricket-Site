@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import React from "react";
+// Visuals are theme-aware: the legacy gold `sponsors_bg.png` background image is
+// retired in favor of a token surface (var(--ink)) that works in both themes.
 
 export default function SponsorsBanner({ data }) {
   // Adjust this to match your CMS base URL
@@ -34,22 +36,13 @@ export default function SponsorsBanner({ data }) {
   ].filter((item) => item.image); // keep only sponsors that have an image
 
   return (
-    <section className="sponsors-banner relative py-16 px-4">
-      {/* Background image */}
-      <div className="absolute inset-0 z-0">
-        <Image
-          src="/images/sponsors_bg.png"
-          alt="Sponsors background"
-          fill
-          className="object-cover"
-          priority
-        />
-      </div>
-
-      {/* Content container */}
+    <section className="sponsors-banner relative py-16 px-4 bg-[#F5F3ED]">
+      {/* Sponsor logos are mixed formats (some have baked-in white backgrounds),
+          so this is an intentional light "sponsor wall" band in both themes —
+          logos read naturally on light instead of as white blocks on dark. */}
       <div className="relative z-10 container mx-auto">
         {/* Title */}
-        <h2 className="text-4xl md:text-5xl font-bold text-center mb-12 text-black oswald-bold">
+        <h2 className="text-4xl md:text-5xl font-bold text-center mb-12 text-[#16202E] oswald-bold">
           {data?.title || "Our Sponsors"}
         </h2>
 
@@ -73,7 +66,7 @@ export default function SponsorsBanner({ data }) {
             return (
               <div
                 key={image.id || index}
-                className="flex justify-center items-center p-4 rounded-lg"
+                className="flex justify-center items-center p-4"
               >
                 {/* If we have a link, wrap the image in <a>. Otherwise, just render the image. */}
                 {link ? (

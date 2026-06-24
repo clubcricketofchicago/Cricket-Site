@@ -1,29 +1,42 @@
 'use client'
 
 import { ReactNode } from 'react'
-import { Oswald, Roboto_Condensed } from 'next/font/google'
+import { Saira_Condensed, Archivo } from 'next/font/google'
 
 import HeaderNavPanel from './components/ui/HeaderNavPanel'
 import FooterPanel from './components/ui/FooterPanel'
 import './globals.css'
 
-// Self-hosted via next/font (no render-blocking Google Fonts request, less layout shift).
-const oswald = Oswald({
+// Revamp 2026 — "Blue Hour / Chicago Dusk".
+// New type pairing: Saira Condensed (athletic display) + Archivo (grotesque body).
+// They are loaded into the legacy CSS variable names (--font-oswald / --font-roboto-condensed)
+// so every existing typography class re-skins at once with no stale references.
+const saira = Saira_Condensed({
   subsets: ['latin'],
+  weight: ['500', '600', '700', '800', '900'],
   display: 'swap',
   variable: '--font-oswald',
 })
-const robotoCondensed = Roboto_Condensed({
+const archivo = Archivo({
   subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
   display: 'swap',
   variable: '--font-roboto-condensed',
 })
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${oswald.variable} ${robotoCondensed.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${saira.variable} ${archivo.variable}`}>
       <head>
         <title>Club Cricket of Chicago | Discover Competitive Cricket</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        {/* Apply saved theme before paint to avoid a flash (default: dusk/dark). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var t=localStorage.getItem('ccc-theme');document.documentElement.dataset.theme=(t==='light'?'light':'dark');}catch(e){document.documentElement.dataset.theme='dark';}})();",
+          }}
+        />
         <link rel="icon" href="/images/favicon.ico" />
         <link rel="preconnect" href="https://media.cricclubs.com" crossOrigin="" />
         <meta
@@ -32,7 +45,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
       </head>
       <body>
-        <div className="w-full h-full bg-[url('/images/bg-patterns/bg_pattern_min_1.png')] bg-repeat-y bg-[100%] bg-[length:100%]">
+        <div className="site_shell">
           <HeaderNavPanel />
           {children}
           <FooterPanel />

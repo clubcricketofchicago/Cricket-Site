@@ -69,11 +69,7 @@ const HomePageContent = () => {
     return pageData.entries[0].homePageBlocks.map((block) => {
       switch (block.typeHandle) {
         case "homeHeroBanner":
-          return (
-            <Suspense key={block.id} fallback={<div className="loading-hero">Loading hero...</div>}>
-              <HeroBanner data={block} />
-            </Suspense>
-          );
+          return <HeroBanner key={block.id} fixtures={dbFixtures} />;
         case "fixturesGrid":
           return (
             <Fragment key={block.id}>

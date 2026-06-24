@@ -63,7 +63,7 @@ export default function Page() {
   return (
     // No forced height: the old `min-h-screen` + `aspect-[16/9]` padded the page out
     // to a full viewport and exposed a big empty band below the short calendar.
-    <div className="py-20 text-white">
+    <div className="py-20 text-[color:var(--text)]">
       <Suspense
         fallback={
           <div className="container mx-auto text-center">Loading matches...</div>

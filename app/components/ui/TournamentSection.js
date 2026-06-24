@@ -9,7 +9,7 @@ function TopPlayers({ tournament }) {
   if (!tournament || !tournament.topPlayers || tournament.topPlayers.length === 0) {
     return (
       <div className="LT_gridEle LT_fixtures_results_tabs_parent">
-        <div className="p-4 text-center text-[#d8d8d8]">
+        <div className="p-4 text-center text-[color:var(--text-muted)]">
           <p>No player stats available</p>
         </div>
       </div>
@@ -47,8 +47,8 @@ function PlayerCard({ player, number }) {
     : '/images/default-player.png'
 
   const cardContent = (
-    <div className="player_card flex items-center bg-[#1a1a1a] overflow-hidden mb-2 border-[#D2A357] border-[2px] rounded-xl">
-      <div className="player_image w-[50%] h-auto relative bg-[#C9C9C9] pt-[4.2%] pb-[1%] px-[2%]">
+    <div className="player_card flex items-center bg-[var(--panel)] overflow-hidden mb-2 border-[var(--orange)] border-[2px] rounded-xl">
+      <div className="player_image w-[50%] h-auto relative bg-[var(--panel-2)] pt-[4.2%] pb-[1%] px-[2%]">
         <Image
           src={playerImageUrl}
           alt={player.playerName || 'Player'}
@@ -59,16 +59,16 @@ function PlayerCard({ player, number }) {
         />
       </div>
       <div className="player_info p-4 flex-1">
-        <div className="stat_title text-[#d8d8d8] roboto-condensed-regular p2 mb-1 text-center">
+        <div className="stat_title text-[color:var(--text-muted)] roboto-condensed-regular p2 mb-1 text-center">
           {player?.title || ''}
         </div>
-        <div className="stat_value text-[#FA4616] oswald-regular h3 font-bold text-center">
+        <div className="stat_value text-[color:var(--orange)] oswald-regular h3 font-bold text-center">
           {number}
         </div>
-        <div className="player_name text-white roboto-condensed-bold p4 text-center">
+        <div className="player_name text-[color:var(--text)] roboto-condensed-bold p4 text-center">
           {player.playerName || ''}
         </div>
-        <div className="player_position text-[#d8d8d8] roboto-condensed-regular p5 text-center">
+        <div className="player_position text-[color:var(--text-muted)] roboto-condensed-regular p5 text-center">
           {player.playerPosition || ''}
         </div>
       </div>
@@ -152,7 +152,7 @@ function LeagueStandings({ teamStandings }) {
               <StandingListEle key={team.id || Math.random().toString()} team={team} />
             ))
           ) : (
-            <div className="p-4 text-center text-[#d8d8d8]">
+            <div className="p-4 text-center text-[color:var(--text-muted)]">
               <p>No standings available</p>
             </div>
           )}
@@ -181,7 +181,7 @@ function LeagueLogo({ tournament }) {
     >
       <div className="league_btn desk_only">
         <Link href={`/tournaments/2025/${tournament?.slug || ''}`} className="flex mx-auto">
-          <button className="roboto-condensed-bold p2 !border-0 bg-gradient-to-b from-[#8F5F1F] via-[#D4A845] to-[#8F5F1F] text-black">
+          <button className="roboto-condensed-bold p2 !border-0 bg-[var(--orange)] hover:bg-[var(--orange-bright)] text-[color:#1a0d05]">
             League
           </button>
         </Link>
@@ -239,7 +239,7 @@ export default function TournamentSection({ data }) {
             {(data && data.title) || 'Tournaments'}
           </SectionTitleEle>
         </div>
-        <div className="px-[5%] bg-[#161616]">
+        <div className="px-[5%] bg-[var(--ink)]">
           <div className="LT_container flex_grid">
             <div className="pagination_home_controls">
               <Image

@@ -14,7 +14,7 @@ export default function MatchLocation({ className = '', logoWhite = false, child
         <Image
           src={img_url}
           alt="Location Icon"
-          className="w-full h-full"
+          className="w-full h-full ccc-meta-ico"
           width={16}
           height={16}
           unoptimized

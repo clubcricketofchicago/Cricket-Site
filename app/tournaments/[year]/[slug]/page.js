@@ -55,7 +55,7 @@ function StandingListEle({ team }) {
         <p className="roboto-condensed-bold light_grey p5">{team.noResults || 0}</p>
       </div>
       <div className="SListing_pts">
-        <p className="roboto-condensed-bold p5" style={{ color: "#D2A357" }}>
+        <p className="roboto-condensed-bold p5" style={{ color: "var(--orange)" }}>
           {team.points ?? 0}
         </p>
       </div>
@@ -90,7 +90,7 @@ function LeagueStandings({ teamStandings }) {
             <p className="roboto-condensed-bold light_grey p5">NR</p>
           </div>
           <div className="SListing_pts">
-            <p className="roboto-condensed-bold p5" style={{ color: "#D2A357" }}>PTS</p>
+            <p className="roboto-condensed-bold p5" style={{ color: "var(--orange)" }}>PTS</p>
           </div>
         </div>
 
@@ -100,7 +100,7 @@ function LeagueStandings({ teamStandings }) {
               <StandingListEle key={team.id || Math.random().toString()} team={team} />
             ))
           ) : (
-            <div className="p-4 text-center text-[#d8d8d8]">
+            <div className="p-4 text-center text-[color:var(--text-muted)]">
               <p>No standings available</p>
             </div>
           )}
