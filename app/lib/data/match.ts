@@ -19,27 +19,63 @@ const oversFromBalls = (b: number) => `${Math.floor(b / 6)}.${b % 6}`;
 
 type Row = Record<string, unknown>;
 
+function shapeExtras(ex: unknown) {
+  if (ex && typeof ex === "object") {
+    const e = ex as Row;
+    const b = num(e.b);
+    const lb = num(e.lb);
+    const wd = num(e.wd);
+    const nb = num(e.nb);
+    const pn = num(e.pn);
+    return { b, lb, wd, nb, pn, total: b + lb + wd + nb + pn };
+  }
+  return { b: 0, lb: 0, wd: 0, nb: 0, pn: 0, total: num(ex) };
+}
+
 function shapeInnings(inn: Row | undefined) {
   if (!inn) return null;
-  const batting = Array.isArray(inn.batting) ? (inn.batting as Row[]) : [];
+  const battingRaw = Array.isArray(inn.batting) ? (inn.batting as Row[]) : [];
   const bowling = Array.isArray(inn.bowling) ? (inn.bowling as Row[]) : [];
-  if (batting.length === 0 && num(inn.total) === 0) return null;
+  if (battingRaw.length === 0 && num(inn.total) === 0) return null;
+
+  // CricClubs marks players who didn't bat with outStringNoLink === "DNB".
+  const isDnb = (b: Row) => str(b.outStringNoLink).toUpperCase() === "DNB";
+  const batted = battingRaw.filter((b) => !isDnb(b));
+  const didNotBat = battingRaw
+    .filter(isDnb)
+    .map((b) => fullName(b.firstName, b.lastName))
+    .filter(Boolean);
+
+  const fallOfWickets = (
+    Array.isArray(inn.fallOfWickets) ? (inn.fallOfWickets as Row[]) : []
+  ).map((f) => {
+    const t = str(f.total); // e.g. "26-1 (3.4 ov)"
+    const m = t.match(/(\d+)\s*-\s*(\d+)\s*\(([\d.]+)/);
+    return {
+      runs: m ? Number(m[1]) : 0,
+      wicket: m ? Number(m[2]) : 0,
+      over: m ? m[3] : "",
+      player: str(f.playerName),
+    };
+  });
 
   return {
     teamName: str(inn.teamName) || "Team",
     total: num(inn.total),
     wickets: num(inn.wickets),
     overs: str(inn.overs),
-    extras: num(inn.extras),
     runRate: str(inn.runRate),
-    batting: batting.map((b) => {
+    extras: shapeExtras(inn.extras),
+    didNotBat,
+    fallOfWickets,
+    batting: batted.map((b) => {
       const runs = num(b.runsScored);
       const balls = num(b.ballsFaced);
       return {
         name: fullName(b.firstName, b.lastName),
         dismissal:
           str(b.outStringNoLink) || (str(b.isOut) === "1" ? "out" : "not out"),
-        notOut: str(b.isOut) !== "1",
+        notOut: str(b.isOut) === "0",
         runs,
         balls,
         fours: num(b.fours),
@@ -56,6 +92,8 @@ function shapeInnings(inn: Row | undefined) {
         maidens: num(b.maidens),
         runs,
         wickets: num(b.wickets),
+        wides: num(b.wides),
+        noBalls: num(b.noBalls),
         econ: balls > 0 ? (runs / (balls / 6)).toFixed(1) : "0.0",
       };
     }),
