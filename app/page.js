@@ -10,6 +10,7 @@ import MeetSquad from "./components/ui/MeetSquad";
 import BGParralaxBanner from "./components/ui/BGParralaxBanner";
 import SponsorsBanner from "./components/ui/SponsorsBanner";
 import FixturesGrid from "./components/ui/FixturesGrid";
+import HomeSeasonHub from "./components/ui/HomeSeasonHub";
 import TournamentSection from "./components/ui/TournamentSection";
 import { fetchGraphQL } from "./lib/graphqlClient";
 import { getHomePageQuery } from "./lib/queries/homePageQuery";
@@ -82,6 +83,7 @@ const HomePageContent = () => {
                   fixturesEntries: dbFixtures ?? block.fixturesEntries,
                 }}
               />
+              <HomeSeasonHub />
               <RecentResults results={recentResults ?? []} />
             </Fragment>
           );
