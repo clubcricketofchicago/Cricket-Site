@@ -44,7 +44,12 @@ async function buildDetail(series: { id: number; name: string; year: string }) {
         orderBy: { total: "desc" },
       }),
       prisma.match.findMany({
-        where: { seriesId, isComplete: true },
+        // Results panel is CCC-focused: only completed matches CCC played in.
+        where: {
+          seriesId,
+          isComplete: true,
+          OR: [{ teamOneName: CCC_NAME }, { teamTwoName: CCC_NAME }],
+        },
         orderBy: [{ lastUpdated: "desc" }, { id: "desc" }],
         take: 20,
       }),
