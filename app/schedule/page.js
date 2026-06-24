@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 import { useEffect, useState, Suspense } from "react";
 import UpcomingMatchPanel from "../components/calendar/UpcomingMatchPanel";
 import DateCalendar from "../components/calendar/DateCalendar";
+import { ScheduleSkeleton } from "../components/skeletons/PageSkeletons";
 // Calendar data now comes from the local DB (Neon) via /api/schedule (CCC's fixtures),
 // shaped like the old CMS fixture payload.
 
@@ -28,7 +29,7 @@ export default function Page() {
   }, []);
 
   if (loading) {
-    return <div className="loading-message">Loading calendar data...</div>;
+    return <ScheduleSkeleton />;
   }
 
   if (error) {

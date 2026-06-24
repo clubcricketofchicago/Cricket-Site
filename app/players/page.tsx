@@ -6,6 +6,7 @@ export const dynamic = 'force-dynamic';
 import Image from 'next/image'
 import Link from 'next/link'
 import SectionTitleEle from '../components/ui/SectionTitleEle'
+import { PlayersGridSkeleton } from '../components/skeletons/PageSkeletons'
 import { useEffect, useState } from 'react'
 // Roster now comes from the local DB (Neon) via /api/players (CCC's squad), shaped
 // like the old CMS player payload. The "Show Full Stats" modal still uses the live
@@ -388,6 +389,7 @@ export default function Page() {
 
   // 2) Type your configuration value (lightswitch: boolean)
   const [lightswitch, setLightswitch] = useState<boolean>(false)
+  const [loading, setLoading] = useState<boolean>(true)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -405,6 +407,8 @@ export default function Page() {
         setLightswitch(false)
       } catch (err) {
         console.error('Error fetching data:', err)
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -417,9 +421,13 @@ export default function Page() {
         <SectionTitleEle>Players</SectionTitleEle>
         <hr className="w-full h-[0.1vw] bg-[#FFFFFF] border-none" />
         <div className="players_panel_container items-center relative">
-          {players.map((player) => (
-            <PlayerCardEle key={player.id} player={player} lightswitch={lightswitch} />
-          ))}
+          {loading ? (
+            <PlayersGridSkeleton count={12} />
+          ) : (
+            players.map((player) => (
+              <PlayerCardEle key={player.id} player={player} lightswitch={lightswitch} />
+            ))
+          )}
 
         </div>
       </div>

@@ -4197,3 +4197,27 @@ div.credsContainer_grph img
         --chart-5: 340 75% 55%;
     }
 }
+
+/* ===== Branded loading skeletons (dark theme) =====
+   A subtle gold-tinted sweep over a dark base, matching the site palette.
+   Used in place of blank/"Loading…" states while client data is fetched. */
+@keyframes ccc-skeleton-sweep {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+.ccc-skel {
+    background-color: #1a1e2a;
+    background-image: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(210, 163, 87, 0.10) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
+    animation: ccc-skeleton-sweep 1.5s ease-in-out infinite;
+    border-radius: 0.5vw;
+}
+@media (prefers-reduced-motion: reduce) {
+    .ccc-skel { animation: none; }
+}

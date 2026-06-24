@@ -11,6 +11,7 @@ import PlayerOfTheWeek from "../../../components/tournaments/PlayerOfTheWeek";
 import LeagueHighlights from "../../../components/tournaments/LeagueHighlights";
 import FixturesAndResults from "../../../components/tournaments/FixturesAndResults";
 import NumberZone from "../../../components/tournaments/NumberZone";
+import { TournamentDetailSkeleton } from "../../../components/skeletons/PageSkeletons";
 import Image from "next/image";
 
 const cmsBaseUrl = process.env.NEXT_PUBLIC_CMS_URL || "";
@@ -202,11 +203,7 @@ export default function LeagueStatsContainer() {
   }, [allTournaments, currentTournamentIndex, params, router, fetchFixturesForTournament]);
 
   if (loading) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <p className="roboto-condensed-regular text-white p3">Loading tournament…</p>
-      </div>
-    );
+    return <TournamentDetailSkeleton />;
   }
   if (error || !tournamentData) {
     return notFound();

@@ -6,6 +6,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { PlayerProfileSkeleton } from "../../components/skeletons/PageSkeletons";
 
 interface BattingRow {
   format: string;
@@ -91,12 +92,7 @@ export default function PlayerProfile() {
       .catch(() => setLoading(false));
   }, [id]);
 
-  if (loading)
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <p className="roboto-condensed-regular text-white p3">Loading profile…</p>
-      </div>
-    );
+  if (loading) return <PlayerProfileSkeleton />;
   if (!p || p.error)
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">

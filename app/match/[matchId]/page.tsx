@@ -6,6 +6,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { MatchCentreSkeleton } from "../../components/skeletons/PageSkeletons";
 
 interface Bat {
   name: string;
@@ -248,12 +249,7 @@ export default function MatchCentre() {
       .catch(() => setLoading(false));
   }, [id]);
 
-  if (loading)
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <p className="roboto-condensed-regular text-white p3">Loading scorecard…</p>
-      </div>
-    );
+  if (loading) return <MatchCentreSkeleton />;
   if (!m || m.error || !m.found || m.innings.length === 0)
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
