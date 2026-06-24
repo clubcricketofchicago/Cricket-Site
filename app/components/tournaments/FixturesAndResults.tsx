@@ -22,6 +22,8 @@ interface LogoItem {
 
 interface FixtureItem {
   id: string;
+  t1Name?: string;
+  t1Logo?: LogoItem[];
   t2Name?: string;
   t2Logo?: LogoItem[];
   groundsName?: string;
@@ -124,9 +126,12 @@ function parseOvers(oversString?: string | null) {
 // Fixture item for the "Fixtures" tab
 // -----------------------------
 function MatchFixtureEle({ fixture }: { fixture: FixtureItem }) {
-  // We'll treat T2 as the "opponent" for the UI.
-  const opponentName = fixture?.t2Name || "Opponent";
-  const opponentLogoObj = fixture?.t2Logo?.[0];
+  // These are CCC's fixtures, so the opponent is whichever side isn't CCC
+  // (CCC can be listed as either team one or team two).
+  const CCC = "Club Cricket of Chicago";
+  const cccIsT1 = fixture?.t1Name === CCC;
+  const opponentName = (cccIsT1 ? fixture?.t2Name : fixture?.t1Name) || "Opponent";
+  const opponentLogoObj = cccIsT1 ? fixture?.t2Logo?.[0] : fixture?.t1Logo?.[0];
   const opponentLogo = getFullImageUrl(opponentLogoObj?.url);
 
   const location = fixture?.groundsName || "";
