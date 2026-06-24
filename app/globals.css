@@ -4655,15 +4655,3 @@ header.main_header .nav_container { width: 80%; }
    images; keep them legible on the themed --panel surface in BOTH modes. */
 .ccc-meta-ico { opacity: 0.6; }
 [data-theme="dark"] .ccc-meta-ico { filter: invert(1) brightness(1.85); opacity: 0.72; }
-
-/* Player "Full Stats" modal — theme-aware sheet + tables */
-.ccc-stats-modal {
-  background: var(--panel);
-  color: var(--text);
-  border: 1px solid var(--panel-line-strong);
-}
-.ccc-stats-modal thead { background: var(--panel-2); }
-.ccc-stats-modal th,
-.ccc-stats-modal td { border-color: var(--panel-line); }
-.ccc-stats-modal h2,
-.ccc-stats-modal h3 { color: var(--text); border-color: var(--panel-line); }

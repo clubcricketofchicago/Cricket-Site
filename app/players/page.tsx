@@ -9,8 +9,8 @@ import SectionTitleEle from '../components/ui/SectionTitleEle'
 import { PlayersGridSkeleton } from '../components/skeletons/PageSkeletons'
 import { useEffect, useState } from 'react'
 // Roster now comes from the local DB (Neon) via /api/players (CCC's squad), shaped
-// like the old CMS player payload. The "Show Full Stats" modal still uses the live
-// CricClubs career stats via /api/player-stats.
+// like the old CMS player payload. Each card links to the full player profile page
+// (/players/[id]) for detailed stats.
 
 // ------------------------------------
 // Define interfaces for typed data
@@ -44,41 +44,6 @@ interface GraphQLPlayersResponse {
 }
 
 
-/* ================= TYPES ================= */
-
-interface BattingStat {
-  seriesType: string;
-  matches: number;
-  innings: number;
-  runsScored: number;
-  highestScore: number;
-  average: string;
-  strikeRate: string;
-  fours: number;
-  sixers: number;
-  fifties: number;
-  hundreds: number;
-}
-
-interface BowlingStat {
-  seriesType: string;
-  matches: number;
-  innings: number;
-  overs: number | null;
-  runsGiven: number;
-  wickets: number;
-  economy: string;
-  maidens: number;
-}
-
-interface PlayerStats {
-  battingStats: BattingStat[];
-  bowlingStats: BowlingStat[];
-}
-
-
-
-
 function PlayerCardEle({
   player,
   lightswitch,
@@ -108,40 +73,6 @@ function PlayerCardEle({
   const accentColor =
     rank === 1 ? 'var(--orange)' : 'var(--panel-line-strong)'
 
-
-
-
-  const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const [stats, setStats] = useState<PlayerStats>({
-    battingStats: [],
-    bowlingStats: [],
-  });
-
-  const fetchStats = async (id: number) => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const res = await fetch(
-        `/api/player-stats?playerId=${id}`
-      );
-
-      const data = await res.json();
-
-      setStats(
-        data.data ?? { battingStats: [], bowlingStats: [] }
-      );
-
-      setIsOpen(true);
-    } catch {
-      setError("Failed to fetch stats");
-    } finally {
-      setLoading(false);
-    }
-  };
 
 
 
@@ -182,143 +113,6 @@ function PlayerCardEle({
             >
               View Profile
             </Link>
-
-            {/* Quick in-page career stats (live CricClubs) */}
-            <button
-              type="button"
-              onClick={() => fetchStats(player.playerid || 0)}
-              className="block w-full mt-2 text-[color:var(--text-muted)] font-bold text-center uppercase hover:text-[color:var(--text)] transition-colors"
-            >
-              Full Stats
-            </button>
-
-            {/* Popup Modal */}
-            {isOpen && (
-              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                <div className="ccc-stats-modal w-[900px] max-h-[80vh] overflow-auto rounded-xl p-6 relative shadow-xl">
-
-                  <button
-                    onClick={() => setIsOpen(false)}
-                    className="absolute top-3 right-4 text-lg"
-                  >
-                    ✕
-                  </button>
-
-                  <h2 className="text-2xl font-bold mb-6">
-                    Player Statistics
-                  </h2>
-
-                  {loading && <p>Loading...</p>}
-                  {error && <p className="text-[color:var(--loss)]">{error}</p>}
-
-                  {!loading &&
-                    stats.battingStats.length > 0 && (
-
-                      <div className="space-y-10">
-
-                        {[...new Set(
-                          stats.battingStats.map(b => b.seriesType)
-                        )].map((type) => {
-
-                          const battingByType =
-                            stats.battingStats.filter(
-                              (b) => b.seriesType === type
-                            );
-
-                          const bowlingByType =
-                            stats.bowlingStats.filter(
-                              (b) => b.seriesType === type
-                            );
-
-                          return (
-                            <div key={type} className="space-y-6">
-
-                              <h3 className="text-xl font-semibold border-b pb-2">
-                                {type} Stats
-                              </h3>
-
-                              {/* Batting Table */}
-                              {battingByType.length > 0 && (
-                                <div className="overflow-auto border rounded-lg">
-                                  <table className="min-w-full text-sm">
-                                    <thead className="bg-gray-100">
-                                      <tr>
-                                        <th className="border px-3 py-2">Matches</th>
-                                        <th className="border px-3 py-2">Runs</th>
-                                        <th className="border px-3 py-2">Highest</th>
-                                        <th className="border px-3 py-2">Avg</th>
-                                        <th className="border px-3 py-2">SR</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {battingByType.map((bat, i) => (
-                                        <tr key={i} className="text-center">
-                                          <td className="border px-3 py-2">
-                                            {bat.matches}
-                                          </td>
-                                          <td className="border px-3 py-2 font-semibold">
-                                            {bat.runsScored}
-                                          </td>
-                                          <td className="border px-3 py-2">
-                                            {bat.highestScore}
-                                          </td>
-                                          <td className="border px-3 py-2">
-                                            {bat.average}
-                                          </td>
-                                          <td className="border px-3 py-2">
-                                            {bat.strikeRate}
-                                          </td>
-                                        </tr>
-                                      ))}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              )}
-
-                              {/* Bowling Table */}
-                              {bowlingByType.length > 0 && (
-                                <div className="overflow-auto border rounded-lg">
-                                  <table className="min-w-full text-sm">
-                                    <thead className="bg-gray-100">
-                                      <tr>
-                                        <th className="border px-3 py-2">Matches</th>
-                                        <th className="border px-3 py-2">Wickets</th>
-                                        <th className="border px-3 py-2">Runs</th>
-                                        <th className="border px-3 py-2">Economy</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {bowlingByType.map((bowl, i) => (
-                                        <tr key={i} className="text-center">
-                                          <td className="border px-3 py-2">
-                                            {bowl.matches}
-                                          </td>
-                                          <td className="border px-3 py-2 font-semibold">
-                                            {bowl.wickets}
-                                          </td>
-                                          <td className="border px-3 py-2">
-                                            {bowl.runsGiven}
-                                          </td>
-                                          <td className="border px-3 py-2">
-                                            {bowl.economy}
-                                          </td>
-                                        </tr>
-                                      ))}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              )}
-
-                            </div>
-                          );
-                        })}
-
-                      </div>
-                    )}
-
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
