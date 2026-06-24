@@ -297,7 +297,12 @@ async function buildFixtureEntries(slug: string): Promise<{ entries: Entry[] }> 
   if (!Number.isFinite(seriesId)) return { entries: [] };
 
   const fixtures = await prisma.fixture.findMany({
-    where: { seriesId, matchId: 0 },
+    // CCC-focused: only upcoming fixtures CCC is scheduled to play in.
+    where: {
+      seriesId,
+      matchId: 0,
+      OR: [{ teamOneName: CCC_NAME }, { teamTwoName: CCC_NAME }],
+    },
     orderBy: [{ matchDateTime: "asc" }, { id: "asc" }],
     take: 40,
   });
