@@ -16,6 +16,13 @@ const num = (v: unknown) => {
   const n = typeof v === "string" ? parseFloat(v) : (v as number);
   return Number.isFinite(n) ? n : 0;
 };
+// CricClubs already computes average / strike-rate / economy. Show those verbatim so
+// the profile matches the official CricClubs figures exactly (e.g. 24.25, not 24.3);
+// only tidy their "--" / "-" / empty placeholders to an em dash.
+const ccStat = (v: unknown) => {
+  const s = str(v).trim();
+  return s === "" || s === "--" || s === "-" ? "—" : s;
+};
 const oversFromBalls = (b: number) => `${Math.floor(b / 6)}.${b % 6}`;
 const SEASON_IDS = TRACKED_SERIES.filter((s) => s.year === "2026").map((s) => s.id);
 
@@ -68,43 +75,37 @@ async function buildPlayerProfile(playerId: number) {
 
   const careerBatting = (
     Array.isArray(career?.battingStats) ? career!.battingStats : []
-  ).map((b) => {
-    const innings = num(b.innings);
-    const notOuts = num(b.notOuts);
-    const runs = num(b.runsScored);
-    const balls = num(b.ballsFaced);
-    const outs = innings - notOuts;
-    return {
-      format: str(b.seriesType) || "Overall",
-      matches: num(b.matches),
-      innings,
-      runs,
-      highestScore: num(b.highestScore),
-      average: outs > 0 ? (runs / outs).toFixed(1) : runs > 0 ? "—" : "0.0",
-      strikeRate: balls > 0 ? ((runs / balls) * 100).toFixed(1) : "0.0",
-      fours: num(b.fours),
-      sixes: num(b.sixers),
-      fifties: num(b.fifties),
-      hundreds: num(b.hundreds),
-    };
-  });
+  ).map((b) => ({
+    format: str(b.seriesType) || "Overall",
+    matches: num(b.matches),
+    innings: num(b.innings),
+    runs: num(b.runsScored),
+    highestScore: num(b.highestScore),
+    // CricClubs' own figures, verbatim.
+    average: ccStat(b.average),
+    strikeRate: ccStat(b.strikeRate),
+    fours: num(b.fours),
+    sixes: num(b.sixers),
+    fifties: num(b.fifties),
+    hundreds: num(b.hundreds),
+  }));
 
   const careerBowling = (
     Array.isArray(career?.bowlingStats) ? career!.bowlingStats : []
   ).map((b) => {
     const balls = num(b.balls);
-    const runs = num(b.runs);
     const wickets = num(b.wickets);
     return {
       format: str(b.seriesType) || "Overall",
       matches: num(b.matches),
       innings: num(b.innings),
-      overs: oversFromBalls(balls),
-      runs,
+      overs: oversFromBalls(balls), // CricClubs doesn't return overs; derive from balls
+      runs: num(b.runs),
       wickets,
       maidens: num(b.maidens),
-      average: wickets > 0 ? (runs / wickets).toFixed(1) : "—",
-      economy: balls > 0 ? (runs / (balls / 6)).toFixed(1) : "0.0",
+      // CricClubs' own figures; their bowling average is "0" when wkts=0, so show "—".
+      average: wickets > 0 ? ccStat(b.average) : "—",
+      economy: ccStat(b.economy),
       fourWickets: num(b.fourWickets),
       fiveWickets: num(b.fiveWickets),
     };
