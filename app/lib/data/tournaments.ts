@@ -5,7 +5,6 @@
 import { prisma } from "../db/prisma";
 import { TRACKED_SERIES } from "../cricclubs/config";
 
-const TABLE_LIMIT = 25; // rows shown per Number Zone leaderboard
 const IMG = "https://media.cricclubs.com";
 const CCC_NAME = "Club Cricket of Chicago";
 
@@ -23,62 +22,49 @@ type Entry = Record<string, unknown>;
 async function buildDetail(series: { id: number; name: string; year: string }) {
   const seriesId = series.id;
 
-  const [
-    standings,
-    batting,
-    bowling,
-    fielding,
-    matches,
-    matchCount,
-    battingAgg,
-    rankBat,
-    rankBowl,
-    rankField,
-  ] = await Promise.all([
-    prisma.standing.findMany({
-      where: { seriesId },
-      orderBy: [{ points: "desc" }, { netRunRate: "desc" }],
-    }),
-    prisma.playerBattingStat.findMany({
-      where: { seriesId },
-      orderBy: { runs: "desc" },
-      take: TABLE_LIMIT,
-    }),
-    prisma.playerBowlingStat.findMany({
-      where: { seriesId },
-      orderBy: { wickets: "desc" },
-      take: TABLE_LIMIT,
-    }),
-    prisma.playerFieldingStat.findMany({
-      where: { seriesId },
-      orderBy: { total: "desc" },
-      take: TABLE_LIMIT,
-    }),
-    prisma.match.findMany({
-      where: { seriesId, isComplete: true },
-      orderBy: [{ lastUpdated: "desc" }, { id: "desc" }],
-      take: 20,
-    }),
-    prisma.match.count({ where: { seriesId } }),
-    prisma.playerBattingStat.aggregate({
-      where: { seriesId },
-      _sum: { runs: true, sixes: true },
-    }),
-    prisma.playerBattingStat.findMany({
-      where: { seriesId },
-      select: { playerId: true, firstName: true, lastName: true, points: true },
-    }),
-    prisma.playerBowlingStat.findMany({
-      where: { seriesId },
-      select: { playerId: true, firstName: true, lastName: true, points: true },
-    }),
-    prisma.playerFieldingStat.findMany({
-      where: { seriesId },
-      select: { playerId: true, firstName: true, lastName: true, points: true },
-    }),
-  ]);
+  // Fetch ALL division stats (ordered) so we can compute each player's league rank,
+  // then show only Club Cricket of Chicago players.
+  const [standings, allBatting, allBowling, allFielding, matches] =
+    await Promise.all([
+      prisma.standing.findMany({
+        where: { seriesId },
+        orderBy: [{ points: "desc" }, { netRunRate: "desc" }],
+      }),
+      prisma.playerBattingStat.findMany({
+        where: { seriesId },
+        orderBy: { runs: "desc" },
+      }),
+      prisma.playerBowlingStat.findMany({
+        where: { seriesId },
+        orderBy: { wickets: "desc" },
+      }),
+      prisma.playerFieldingStat.findMany({
+        where: { seriesId },
+        orderBy: { total: "desc" },
+      }),
+      prisma.match.findMany({
+        where: { seriesId, isComplete: true },
+        orderBy: [{ lastUpdated: "desc" }, { id: "desc" }],
+        take: 20,
+      }),
+    ]);
 
-  // teamStandings -> [{ id, title, teamLogo:[{url}], wins, loses }]
+  // League rank = 1-based position in the full division for that metric.
+  const battingRank = new Map<number, number>();
+  allBatting.forEach((b, i) => battingRank.set(b.playerId, i + 1));
+  const bowlingRank = new Map<number, number>();
+  allBowling.forEach((b, i) => bowlingRank.set(b.playerId, i + 1));
+  const fieldingRank = new Map<number, number>();
+  allFielding.forEach((f, i) => fieldingRank.set(f.playerId, i + 1));
+
+  // Restrict player tables / Player of the Week to Club Cricket of Chicago.
+  const isCCC = <T extends { teamName: string | null }>(r: T) =>
+    r.teamName === CCC_NAME;
+  const batting = allBatting.filter(isCCC);
+  const bowling = allBowling.filter(isCCC);
+  const fielding = allFielding.filter(isCCC);
+
+  // teamStandings -> [{ id, title, teamLogo:[{url}], wins, loses }] (full division)
   const teamStandings = standings.map((s) => ({
     id: s.teamId,
     title: s.teamName ?? "Team",
@@ -91,12 +77,13 @@ async function buildDetail(series: { id: number; name: string; year: string }) {
   const topBat = batting[0];
   const topBowl = [...bowling].sort((a, b) => b.wickets - a.wickets)[0];
 
-  // leagueStats highlight cards -> [{ id, title, number }]
+  // leagueStats highlight cards (CCC-focused) -> [{ id, title, number }]
+  const cccMatchesPlayed = standings.find(isCCC)?.matches ?? 0;
   const leagueStats = [
-    { id: `${seriesId}-matches`, title: "Matches", number: matchCount },
-    { id: `${seriesId}-teams`, title: "Teams", number: standings.length },
-    { id: `${seriesId}-runs`, title: "Total Runs", number: battingAgg._sum.runs ?? 0 },
-    { id: `${seriesId}-sixes`, title: "Sixes", number: battingAgg._sum.sixes ?? 0 },
+    { id: `${seriesId}-matches`, title: "Matches", number: cccMatchesPlayed },
+    { id: `${seriesId}-runs`, title: "Runs", number: batting.reduce((s, b) => s + b.runs, 0) },
+    { id: `${seriesId}-wkts`, title: "Wickets", number: bowling.reduce((s, b) => s + b.wickets, 0) },
+    { id: `${seriesId}-sixes`, title: "Sixes", number: batting.reduce((s, b) => s + b.sixes, 0) },
   ];
 
   // topPlayers -> [{ id, playerName, image:[{url}], title, cardValue, playerPosition }]
@@ -145,6 +132,7 @@ async function buildDetail(series: { id: number; name: string; year: string }) {
     hundreds: b.hundreds,
     no: b.notOuts,
     hs: b.highestScore ?? 0,
+    rank: battingRank.get(b.playerId) ?? null,
   }));
   const bowlingNumberZone = bowling.map((b) => ({
     player: fullName(b.firstName, b.lastName),
@@ -158,6 +146,7 @@ async function buildDetail(series: { id: number; name: string; year: string }) {
     fourW: b.fourWickets,
     fiveW: b.fiveWickets,
     db: b.dotBalls,
+    rank: bowlingRank.get(b.playerId) ?? null,
   }));
   const fieldingNumberZone = fielding.map((f) => ({
     player: fullName(f.firstName, f.lastName),
@@ -168,38 +157,62 @@ async function buildDetail(series: { id: number; name: string; year: string }) {
     idr: f.indirectRunOuts,
     stm: f.stumpings,
     to: f.total,
+    rank: fieldingRank.get(f.playerId) ?? null,
   }));
 
-  // rankingZone — sum points across the three stat tables per player
-  const rank = new Map<
+  // rankingZone — total points across the three stat tables per player over the FULL
+  // division, ranked by total (league rank), then filtered to CCC players.
+  const ptsMap = new Map<
     number,
-    { name: string; batting: number; bowling: number; fielding: number }
+    {
+      name: string;
+      teamName: string | null;
+      batting: number;
+      bowling: number;
+      fielding: number;
+    }
   >();
   const bump = (
-    r: { playerId: number; firstName: string | null; lastName: string | null; points: number | null },
+    r: {
+      playerId: number;
+      firstName: string | null;
+      lastName: string | null;
+      teamName: string | null;
+      points: number | null;
+    },
     key: "batting" | "bowling" | "fielding"
   ) => {
     const e =
-      rank.get(r.playerId) ??
-      { name: fullName(r.firstName, r.lastName), batting: 0, bowling: 0, fielding: 0 };
+      ptsMap.get(r.playerId) ??
+      {
+        name: fullName(r.firstName, r.lastName),
+        teamName: r.teamName,
+        batting: 0,
+        bowling: 0,
+        fielding: 0,
+      };
     if (!e.name) e.name = fullName(r.firstName, r.lastName);
+    if (!e.teamName) e.teamName = r.teamName;
     e[key] += r.points ?? 0;
-    rank.set(r.playerId, e);
+    ptsMap.set(r.playerId, e);
   };
-  rankBat.forEach((r) => bump(r, "batting"));
-  rankBowl.forEach((r) => bump(r, "bowling"));
-  rankField.forEach((r) => bump(r, "fielding"));
-  const rankingZone = [...rank.values()]
+  allBatting.forEach((r) => bump(r, "batting"));
+  allBowling.forEach((r) => bump(r, "bowling"));
+  allFielding.forEach((r) => bump(r, "fielding"));
+  const rankingZone = [...ptsMap.values()]
+    .map((e) => ({ ...e, total: e.batting + e.bowling + e.fielding }))
+    .sort((a, b) => b.total - a.total)
+    .map((e, i) => ({ ...e, leagueRank: i + 1 }))
+    .filter((e) => e.teamName === CCC_NAME)
     .map((e) => ({
       player: e.name,
       battingPoints: Math.round(e.batting),
       bowlingPoints: Math.round(e.bowling),
       fieldingPoints: Math.round(e.fielding),
       otherPoints: 0,
-      total: Math.round(e.batting + e.bowling + e.fielding),
-    }))
-    .sort((a, b) => b.total - a.total)
-    .slice(0, TABLE_LIMIT);
+      total: Math.round(e.total),
+      rank: e.leagueRank,
+    }));
 
   return {
     id: String(seriesId),

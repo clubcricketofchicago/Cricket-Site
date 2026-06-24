@@ -9,7 +9,10 @@ function DataRankingTableHeader() {
         <th style={{ width: "4%", textAlign: "center" }} className="p5 white_color">
           #
         </th>
-        <th style={{ width: "23%", textAlign: "left" }} className="p5 white_color">
+        <th style={{ width: "6%", textAlign: "center" }} className="p5 white_color border_th">
+          Rank
+        </th>
+        <th style={{ width: "21%", textAlign: "left" }} className="p5 white_color">
           Player
         </th>
         <th className="p5 white_color border_th">Batting Points</th>
@@ -28,7 +31,10 @@ function DataRankingTableRow({ tableRow, indexVal }) {
       <td style={{ width: "4%", textAlign: "center" }} className="p5 white_color">
         {indexVal + 1}
       </td>
-      <td style={{ width: "23%", textAlign: "left" }} className="p5 white_color">
+      <td style={{ width: "6%", textAlign: "center" }} className="p5 white_color">
+        {tableRow.rank ?? "-"}
+      </td>
+      <td style={{ width: "21%", textAlign: "left" }} className="p5 white_color">
         {tableRow.firstName} {tableRow.lastName}
       </td>
       <td className="p5 white_color">{tableRow.battingPoints}</td>
