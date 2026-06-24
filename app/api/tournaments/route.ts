@@ -1,14 +1,21 @@
-import { NextResponse } from "next/server";
-import { getTournamentEntries } from "../../lib/data/tournaments";
+import { NextRequest, NextResponse } from "next/server";
+import { getTournamentEntries, getTournamentList } from "../../lib/data/tournaments";
 
 // Serves tournament data from the DB in the same shape the CMS used, so the
 // existing tournament page renders it unchanged.
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const view = request.nextUrl.searchParams.get("view");
+  const year = request.nextUrl.searchParams.get("year");
   try {
-    const data = await getTournamentEntries();
+    // ?view=list -> cheap stubs (no per-series build); ?year=YYYY -> one season's full
+    // details; no params -> all (backward compatible).
+    const data =
+      view === "list"
+        ? await getTournamentList()
+        : await getTournamentEntries(year ?? undefined);
     return NextResponse.json(data, {
       headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600" },
     });

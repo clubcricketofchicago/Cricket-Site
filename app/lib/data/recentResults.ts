@@ -1,6 +1,7 @@
 // Server-side: Club Cricket of Chicago's most recent completed matches, from the DB.
 // Used by the home "Recent Results" widget. Scores/result are from CCC's perspective.
 
+import { unstable_cache } from "next/cache";
 import { prisma } from "../db/prisma";
 import { cccMatchOr, isCCCSide } from "./ccc";
 
@@ -21,7 +22,7 @@ export interface RecentResult {
   result: string;
 }
 
-export async function getRecentResults(limit = 6): Promise<RecentResult[]> {
+async function buildRecentResults(limit = 6): Promise<RecentResult[]> {
   const candidates = await prisma.match.findMany({
     where: {
       isComplete: true,
@@ -59,3 +60,9 @@ export async function getRecentResults(limit = 6): Promise<RecentResult[]> {
     };
   });
 }
+
+export const getRecentResults = unstable_cache(
+  buildRecentResults,
+  ["recent-results"],
+  { revalidate: 120, tags: ["cricclubs"] }
+);

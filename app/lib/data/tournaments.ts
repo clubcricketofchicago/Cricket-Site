@@ -282,22 +282,40 @@ async function buildDetail(series: { id: number; name: string; year: string }) {
   } satisfies Entry;
 }
 
-/** All tracked tournaments shaped like the CMS `entries` array (year pages + tournament pages). */
-async function buildTournamentEntries(): Promise<{ entries: Entry[] }> {
-  const details = await Promise.all(TRACKED_SERIES.map(buildDetail));
+const yearPageEntries = (): Entry[] =>
+  [...new Set(TRACKED_SERIES.map((s) => s.year))]
+    .sort()
+    .reverse()
+    .map((y) => ({ id: y, typeHandle: "tournamentYearPage", title: y, slug: y }));
 
-  const years = [...new Set(TRACKED_SERIES.map((s) => s.year))].sort().reverse();
-  const yearPages: Entry[] = years.map((y) => ({
-    id: y,
-    typeHandle: "tournamentYearPage",
-    title: y,
-    slug: y,
+/**
+ * Lightweight list: year pages + tournament STUBS (title/slug/parent only), built from
+ * config with ZERO DB reads. /tournaments and /tournaments/[year] only need this, so they
+ * no longer trigger a full per-series build.
+ */
+export async function getTournamentList(): Promise<{ entries: Entry[] }> {
+  const stubs: Entry[] = TRACKED_SERIES.map((s) => ({
+    id: String(s.id),
+    typeHandle: "tournamentPage",
+    title: s.name,
+    slug: String(s.id),
+    flagImage: [],
+    parent: { id: s.year, title: s.year, slug: s.year, typeHandle: "tournamentYearPage" },
   }));
-
-  return { entries: [...yearPages, ...details] };
+  return { entries: [...yearPageEntries(), ...stubs] };
 }
 
-// Heavy (builds every tracked series). Cache server-side; refreshed by the sync tag.
+/**
+ * Full tournament details. Pass `year` to build only that season's divisions (all a
+ * detail page needs for its prev/next nav) instead of every tracked series.
+ */
+async function buildTournamentEntries(year?: string): Promise<{ entries: Entry[] }> {
+  const wanted = year ? TRACKED_SERIES.filter((s) => s.year === year) : TRACKED_SERIES;
+  const details = await Promise.all(wanted.map(buildDetail));
+  return { entries: [...yearPageEntries(), ...details] };
+}
+
+// Heavy (builds a season's series, or all). Cached per `year` arg; refreshed by sync tag.
 export const getTournamentEntries = unstable_cache(
   buildTournamentEntries,
   ["tournament-entries"],

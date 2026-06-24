@@ -156,7 +156,7 @@ export default function LeagueStatsContainer() {
       return;
     }
 
-    fetch("/api/tournaments")
+    fetch(`/api/tournaments?year=${encodeURIComponent(year)}`)
       .then((r) => r.json())
       .then(async (data) => {
         const allEntries = (data && data.entries) || [];

@@ -140,10 +140,10 @@ export async function syncTeams(seriesId: number): Promise<number> {
 /** Completed/in-progress results for a series. */
 export async function syncMatches(seriesId: number): Promise<number> {
   const list = (await getMatches(seriesId)) ?? [];
-  let count = 0;
-  for (const m of list) {
-    if (!m.matchId) continue; // skip unscored placeholders
-    const payload = {
+  const rows = list.flatMap((m) => {
+    if (!m.matchId) return []; // skip unscored placeholders
+    return [{
+      id: m.matchId,
       seriesId,
       seriesName: m.seriesName ?? null,
       clubId: numOrNull(m.clubId),
@@ -170,26 +170,29 @@ export async function syncMatches(seriesId: number): Promise<number> {
       location: m.location ?? null,
       liveStreamLink: m.live_streaming_link ?? null,
       lastUpdated: dateFromIso(m.lastUpdatedDate),
-    };
-    await prisma.match.upsert({
-      where: { id: m.matchId },
-      create: { id: m.matchId, ...payload },
-      update: payload,
-    });
-    count++;
-  }
-  return count;
+    }];
+  });
+  // Snapshot replace: getMatches returns the series' complete result set, so clear and
+  // bulk-insert in one atomic transaction — far faster than row-by-row upsert, and it
+  // drops any match the source removed. (getMatches throws on error, so an empty list
+  // here is a genuinely empty series, not a failure.)
+  await prisma.$transaction([
+    prisma.match.deleteMany({ where: { seriesId } }),
+    prisma.match.createMany({ data: rows, skipDuplicates: true }),
+  ]);
+  return rows.length;
 }
 
 /** Points table / standings for a series. */
 export async function syncStandings(seriesId: number): Promise<number> {
   const groups = (await getPointsTable(seriesId)) ?? [];
-  let count = 0;
-  for (const g of groups) {
-    for (const row of g.teams ?? []) {
+  const rows = groups.flatMap((g) =>
+    (g.teams ?? []).flatMap((row) => {
       const t = row.team;
-      if (!t?.teamID) continue;
-      const payload = {
+      if (!t?.teamID) return [];
+      return [{
+        seriesId,
+        teamId: t.teamID,
         groupName: g.groupName ?? null,
         teamName: t.teamName ?? null,
         teamCode: t.teamCode ?? null,
@@ -203,24 +206,24 @@ export async function syncStandings(seriesId: number): Promise<number> {
         netRunRate: numOrNull(t.netRunRate),
         runsScored: numOrNull(t.runsScored),
         runsGiven: numOrNull(t.runsGiven),
-      };
-      await prisma.standing.upsert({
-        where: { seriesId_teamId: { seriesId, teamId: t.teamID } },
-        create: { seriesId, teamId: t.teamID, ...payload },
-        update: payload,
-      });
-      count++;
-    }
-  }
-  return count;
+      }];
+    })
+  );
+  await prisma.$transaction([
+    prisma.standing.deleteMany({ where: { seriesId } }),
+    prisma.standing.createMany({ data: rows, skipDuplicates: true }),
+  ]);
+  return rows.length;
 }
 
 /** Batting leaderboard ("Number Zone") for a series. */
 export async function syncBattingStats(seriesId: number): Promise<number> {
   const list = (await getBattingStats(seriesId)) ?? [];
-  for (const b of list) {
-    if (!b.playerID) continue;
-    const payload = {
+  const rows = list.flatMap((b) => {
+    if (!b.playerID) return [];
+    return [{
+      seriesId,
+      playerId: b.playerID,
       teamId: numOrNull(b.teamId),
       firstName: b.firstName ?? null,
       lastName: b.lastName ?? null,
@@ -237,22 +240,23 @@ export async function syncBattingStats(seriesId: number): Promise<number> {
       hundreds: num(b.hundreds),
       highestScore: numOrNull(b.highestScore),
       points: numOrNull(b.points),
-    };
-    await prisma.playerBattingStat.upsert({
-      where: { seriesId_playerId: { seriesId, playerId: b.playerID } },
-      create: { seriesId, playerId: b.playerID, ...payload },
-      update: payload,
-    });
-  }
-  return list.length;
+    }];
+  });
+  await prisma.$transaction([
+    prisma.playerBattingStat.deleteMany({ where: { seriesId } }),
+    prisma.playerBattingStat.createMany({ data: rows, skipDuplicates: true }),
+  ]);
+  return rows.length;
 }
 
 /** Bowling leaderboard for a series. */
 export async function syncBowlingStats(seriesId: number): Promise<number> {
   const list = (await getBowlingStats(seriesId)) ?? [];
-  for (const b of list) {
-    if (!b.playerID) continue;
-    const payload = {
+  const rows = list.flatMap((b) => {
+    if (!b.playerID) return [];
+    return [{
+      seriesId,
+      playerId: b.playerID,
       teamId: numOrNull(b.teamId),
       firstName: b.firstName ?? null,
       lastName: b.lastName ?? null,
@@ -273,22 +277,23 @@ export async function syncBowlingStats(seriesId: number): Promise<number> {
       hattricks: num(b.hattricks),
       economy: numOrNull(b.economy),
       points: numOrNull(b.points),
-    };
-    await prisma.playerBowlingStat.upsert({
-      where: { seriesId_playerId: { seriesId, playerId: b.playerID } },
-      create: { seriesId, playerId: b.playerID, ...payload },
-      update: payload,
-    });
-  }
-  return list.length;
+    }];
+  });
+  await prisma.$transaction([
+    prisma.playerBowlingStat.deleteMany({ where: { seriesId } }),
+    prisma.playerBowlingStat.createMany({ data: rows, skipDuplicates: true }),
+  ]);
+  return rows.length;
 }
 
 /** Fielding leaderboard for a series. */
 export async function syncFieldingStats(seriesId: number): Promise<number> {
   const list = (await getFieldingStats(seriesId)) ?? [];
-  for (const f of list) {
-    if (!f.playerID) continue;
-    const payload = {
+  const rows = list.flatMap((f) => {
+    if (!f.playerID) return [];
+    return [{
+      seriesId,
+      playerId: f.playerID,
       teamId: numOrNull(f.teamId),
       firstName: f.firstName ?? null,
       lastName: f.lastName ?? null,
@@ -302,14 +307,13 @@ export async function syncFieldingStats(seriesId: number): Promise<number> {
       stumpings: num(f.stumpings),
       total: num(f.total),
       points: numOrNull(f.points),
-    };
-    await prisma.playerFieldingStat.upsert({
-      where: { seriesId_playerId: { seriesId, playerId: f.playerID } },
-      create: { seriesId, playerId: f.playerID, ...payload },
-      update: payload,
-    });
-  }
-  return list.length;
+    }];
+  });
+  await prisma.$transaction([
+    prisma.playerFieldingStat.deleteMany({ where: { seriesId } }),
+    prisma.playerFieldingStat.createMany({ data: rows, skipDuplicates: true }),
+  ]);
+  return rows.length;
 }
 
 /** Club Cricket of Chicago's squads (one team entry per division). */
@@ -414,13 +418,24 @@ export async function syncAll(): Promise<{
   steps.series = await runStep("series", syncSeries);
   steps.fixtures = await runStep("fixtures", syncFixtures);
 
+  // Per series, fetch the six endpoints concurrently (bounded burst of 6 — well within
+  // CricClubs limits, and cricFetch retries any throttling); keep SERIES sequential so we
+  // never fan out to 14×6 calls at once.
   for (const { id } of TRACKED_SERIES) {
-    steps[`teams:${id}`] = await runStep(`teams:${id}`, () => syncTeams(id));
-    steps[`matches:${id}`] = await runStep(`matches:${id}`, () => syncMatches(id));
-    steps[`standings:${id}`] = await runStep(`standings:${id}`, () => syncStandings(id));
-    steps[`batting:${id}`] = await runStep(`batting:${id}`, () => syncBattingStats(id));
-    steps[`bowling:${id}`] = await runStep(`bowling:${id}`, () => syncBowlingStats(id));
-    steps[`fielding:${id}`] = await runStep(`fielding:${id}`, () => syncFieldingStats(id));
+    const [teams, matches, standings, batting, bowling, fielding] = await Promise.all([
+      runStep(`teams:${id}`, () => syncTeams(id)),
+      runStep(`matches:${id}`, () => syncMatches(id)),
+      runStep(`standings:${id}`, () => syncStandings(id)),
+      runStep(`batting:${id}`, () => syncBattingStats(id)),
+      runStep(`bowling:${id}`, () => syncBowlingStats(id)),
+      runStep(`fielding:${id}`, () => syncFieldingStats(id)),
+    ]);
+    steps[`teams:${id}`] = teams;
+    steps[`matches:${id}`] = matches;
+    steps[`standings:${id}`] = standings;
+    steps[`batting:${id}`] = batting;
+    steps[`bowling:${id}`] = bowling;
+    steps[`fielding:${id}`] = fielding;
   }
 
   steps.rosters = await runStep("rosters", syncRosters);

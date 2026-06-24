@@ -44,7 +44,7 @@ export default function Page() {
   const currentSlug = pathname.split('/').pop();
 
   useEffect(() => {
-    fetch('/api/tournaments')
+    fetch('/api/tournaments?view=list')
       .then((r) => r.json())
       .then((data) => {
         if (!data || !data.entries) return;

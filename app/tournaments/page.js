@@ -58,7 +58,7 @@ export default function Page() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('/api/tournaments')
+    fetch('/api/tournaments?view=list')
       .then((r) => r.json())
       .then((data) => {
         if (!data?.entries) return;

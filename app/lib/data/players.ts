@@ -4,6 +4,7 @@
 // aggregated across CCC's tracked series; the "Show Full Stats" modal still pulls live
 // career stats from CricClubs via /api/player-stats.
 
+import { unstable_cache } from "next/cache";
 import { prisma } from "../db/prisma";
 import { CCC_TEAM_IDS, TRACKED_SERIES_IDS } from "../cricclubs/config";
 
@@ -15,7 +16,7 @@ const fullName = (f?: string | null, l?: string | null) =>
 
 type Entry = Record<string, unknown>;
 
-export async function getPlayerEntries(): Promise<{ entries: Entry[] }> {
+async function buildPlayerEntries(): Promise<{ entries: Entry[] }> {
   const rosterRows = await prisma.teamRoster.findMany({
     where: { teamId: { in: CCC_TEAM_IDS } },
   });
@@ -86,3 +87,9 @@ export async function getPlayerEntries(): Promise<{ entries: Entry[] }> {
 
   return { entries };
 }
+
+export const getPlayerEntries = unstable_cache(
+  buildPlayerEntries,
+  ["player-entries"],
+  { revalidate: 600, tags: ["cricclubs"] }
+);

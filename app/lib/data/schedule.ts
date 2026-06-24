@@ -1,6 +1,7 @@
 // Server-side: Club Cricket of Chicago's upcoming fixtures from the DB, shaped like the
 // CMS `fixtureCard_Entry` array the schedule page (UpcomingMatchPanel + DateCalendar) expects.
 
+import { unstable_cache } from "next/cache";
 import { prisma } from "../db/prisma";
 import { CCC_TEAM_IDS } from "../cricclubs/config";
 
@@ -11,7 +12,7 @@ const img = (p?: string | null) =>
 type Entry = Record<string, unknown>;
 
 /** Upcoming fixtures involving CCC, ordered by date, in CMS calendar shape. */
-export async function getCalendarEntries(): Promise<{ entries: Entry[] }> {
+async function buildCalendarEntries(): Promise<{ entries: Entry[] }> {
   const fixtures = await prisma.fixture.findMany({
     where: {
       matchId: 0, // not yet played
@@ -49,3 +50,9 @@ export async function getCalendarEntries(): Promise<{ entries: Entry[] }> {
 
   return { entries };
 }
+
+export const getCalendarEntries = unstable_cache(
+  buildCalendarEntries,
+  ["calendar-entries"],
+  { revalidate: 120, tags: ["cricclubs"] }
+);

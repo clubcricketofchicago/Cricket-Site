@@ -7,7 +7,9 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     const data = await getCalendarEntries();
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600" },
+    });
   } catch (err) {
     return NextResponse.json(
       { entries: [], error: err instanceof Error ? err.message : String(err) },

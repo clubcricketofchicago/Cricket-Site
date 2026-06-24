@@ -8,7 +8,9 @@ export async function GET(request: NextRequest) {
   const slug = request.nextUrl.searchParams.get("slug") ?? "";
   try {
     const data = await getFixtureEntries(slug);
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600" },
+    });
   } catch (err) {
     return NextResponse.json(
       { entries: [], error: err instanceof Error ? err.message : String(err) },
