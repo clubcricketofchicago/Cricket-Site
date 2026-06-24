@@ -76,3 +76,14 @@ export const getFieldingStats = (seriesId: number, teamId?: number) =>
     seriesId,
     teamId,
   });
+
+/** A player's career batting/bowling stats (by series type). */
+export const getCareerStats = (playerId: number) =>
+  cricFetch<{
+    battingStats?: Record<string, unknown>[];
+    bowlingStats?: Record<string, unknown>[];
+  }>("/player/getStats", { v: "5.0.29", playerId });
+
+/** A player's profile/bio. */
+export const getUserDetails = (playerId: number) =>
+  cricFetch<Record<string, unknown>>("/user/getUserDetails", { playerId });

@@ -4,6 +4,7 @@
 export const dynamic = 'force-dynamic';
 
 import Image from 'next/image'
+import Link from 'next/link'
 import SectionTitleEle from '../components/ui/SectionTitleEle'
 import { useEffect, useState } from 'react'
 // Roster now comes from the local DB (Neon) via /api/players (CCC's squad), shaped
@@ -192,13 +193,13 @@ function PlayerCardEle({
         <div >
           <div >
 
-            {/* Heading */}
-            <h1
-              onClick={() => openModal(player.playerid || 0)}
-              className="text-white font-bold text-center uppercase"
+            {/* Link to full player profile */}
+            <Link
+              href={`/players/${player.playerid || 0}`}
+              className="block text-white font-bold text-center uppercase hover:text-[#D2A357] transition-colors"
             >
-              Show Full Stats
-            </h1>
+              View Profile
+            </Link>
 
             {/* Popup Modal */}
             {isOpen && (
