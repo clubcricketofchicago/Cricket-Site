@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const summary = await syncAll();
+    // Cached API data auto-refreshes on its revalidate window (see unstable_cache calls).
     const failed = Object.entries(summary.steps).filter(
       ([, s]) => s.status === "error"
     );

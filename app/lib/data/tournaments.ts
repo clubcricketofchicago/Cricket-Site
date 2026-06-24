@@ -2,6 +2,7 @@
 // CMS `tournamentPage_Entry` objects the existing tournament components consume, so the
 // page renders identically while sourced from CricClubs. See REBUILD_PLAN §12.
 
+import { unstable_cache } from "next/cache";
 import { prisma } from "../db/prisma";
 import { TRACKED_SERIES } from "../cricclubs/config";
 
@@ -243,7 +244,7 @@ async function buildDetail(series: { id: number; name: string; year: string }) {
 }
 
 /** All tracked tournaments shaped like the CMS `entries` array (year pages + tournament pages). */
-export async function getTournamentEntries(): Promise<{ entries: Entry[] }> {
+async function buildTournamentEntries(): Promise<{ entries: Entry[] }> {
   const details = await Promise.all(TRACKED_SERIES.map(buildDetail));
 
   const years = [...new Set(TRACKED_SERIES.map((s) => s.year))].sort().reverse();
@@ -257,8 +258,15 @@ export async function getTournamentEntries(): Promise<{ entries: Entry[] }> {
   return { entries: [...yearPages, ...details] };
 }
 
+// Heavy (builds every tracked series). Cache server-side; refreshed by the sync tag.
+export const getTournamentEntries = unstable_cache(
+  buildTournamentEntries,
+  ["tournament-entries"],
+  { revalidate: 120, tags: ["cricclubs"] }
+);
+
 /** Upcoming fixtures for a series, shaped like the CMS fixture entries. */
-export async function getFixtureEntries(slug: string): Promise<{ entries: Entry[] }> {
+async function buildFixtureEntries(slug: string): Promise<{ entries: Entry[] }> {
   const seriesId = Number(slug);
   if (!Number.isFinite(seriesId)) return { entries: [] };
 
@@ -283,3 +291,9 @@ export async function getFixtureEntries(slug: string): Promise<{ entries: Entry[
 
   return { entries };
 }
+
+export const getFixtureEntries = unstable_cache(
+  buildFixtureEntries,
+  ["fixture-entries"],
+  { revalidate: 120, tags: ["cricclubs"] }
+);

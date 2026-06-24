@@ -87,3 +87,10 @@ export const getCareerStats = (playerId: number) =>
 /** A player's profile/bio. */
 export const getUserDetails = (playerId: number) =>
   cricFetch<Record<string, unknown>>("/user/getUserDetails", { playerId });
+
+/** Full scorecard for a match (innings with batting/bowling cards). */
+export const getScoreCard = (matchId: number) =>
+  cricFetch<Record<string, unknown>>("/scoreCard/getScoreCard", {
+    clubId: clubId(),
+    matchId,
+  });

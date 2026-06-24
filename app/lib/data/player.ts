@@ -1,6 +1,7 @@
 // Server-side: a full player profile for Club Cricket of Chicago — bio + career stats
 // pulled live from CricClubs, plus this season's stats from the DB.
 
+import { unstable_cache } from "next/cache";
 import { prisma } from "../db/prisma";
 import { TRACKED_SERIES } from "../cricclubs/config";
 import { getCareerStats, getUserDetails } from "../cricclubs/endpoints";
@@ -18,7 +19,7 @@ const num = (v: unknown) => {
 const oversFromBalls = (b: number) => `${Math.floor(b / 6)}.${b % 6}`;
 const SEASON_IDS = TRACKED_SERIES.filter((s) => s.year === "2026").map((s) => s.id);
 
-export async function getPlayerProfile(playerId: number) {
+async function buildPlayerProfile(playerId: number) {
   const [bioRaw, career, batting, bowling] = await Promise.all([
     getUserDetails(playerId).catch(() => null),
     getCareerStats(playerId).catch(() => null),
@@ -123,3 +124,9 @@ export async function getPlayerProfile(playerId: number) {
     careerBowling,
   };
 }
+
+export const getPlayerProfile = unstable_cache(
+  buildPlayerProfile,
+  ["player-profile"],
+  { revalidate: 600, tags: ["cricclubs"] }
+);

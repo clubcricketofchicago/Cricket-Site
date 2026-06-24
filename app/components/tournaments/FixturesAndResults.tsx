@@ -3,6 +3,7 @@
 import React from "react";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import Image from "next/image";
+import Link from "next/link";
 
 // --- Helper to build full CMS image URLs ---
 const cmsBaseUrl = process.env.NEXT_PUBLIC_CMS_URL || "";
@@ -185,7 +186,10 @@ function MatchResultEle({ result }: { result: ResultItem }) {
   const matchDate = result?.date || "";
 
   return (
-    <div className="MRE_ele flex_grid">
+    <Link
+      href={`/match/${result.id}`}
+      className="MRE_ele flex_grid block transition-opacity hover:opacity-80"
+    >
       <div className="main_teamInfo_parent">
         <div className="w-full my-auto">
           <div className="teamInfo_parent flex_grid">
@@ -258,7 +262,7 @@ function MatchResultEle({ result }: { result: ResultItem }) {
         </div>
       </div>
       <MatchDate>{matchDate}</MatchDate>
-    </div>
+    </Link>
   );
 }
 

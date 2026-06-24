@@ -2,6 +2,7 @@
 // (Summer 2026 divisions), aggregated from the DB. Powers the home "season hub":
 // stat highlights, top performers, and a division standings snapshot.
 
+import { unstable_cache } from "next/cache";
 import { prisma } from "../db/prisma";
 import { TRACKED_SERIES } from "../cricclubs/config";
 
@@ -41,7 +42,7 @@ export interface HomeData {
   divisions: DivisionSnapshot[];
 }
 
-export async function getHomeData(): Promise<HomeData> {
+async function buildHomeData(): Promise<HomeData> {
   const [battingRows, bowlingRows, standings] = await Promise.all([
     prisma.playerBattingStat.findMany({
       where: { seriesId: { in: SEASON_IDS }, teamName: CCC_NAME },
@@ -118,3 +119,8 @@ export async function getHomeData(): Promise<HomeData> {
     divisions,
   };
 }
+
+export const getHomeData = unstable_cache(buildHomeData, ["home-data"], {
+  revalidate: 120,
+  tags: ["cricclubs"],
+});
