@@ -87,6 +87,27 @@ async function buildDetail(series: { id: number; name: string; year: string }) {
     { id: `${seriesId}-sixes`, title: "Sixes", number: batting.reduce((s, b) => s + b.sixes, 0) },
   ];
 
+  // Team Batting / Team Bowling highlight cards — CCC aggregates, same {title, number}
+  // shape as leagueStats so they render through the same CredsEle cards.
+  const teamBatting = [
+    { id: `${seriesId}-tb-runs`, title: "Runs", number: batting.reduce((s, b) => s + b.runs, 0) },
+    { id: `${seriesId}-tb-fours`, title: "Fours", number: batting.reduce((s, b) => s + b.fours, 0) },
+    { id: `${seriesId}-tb-sixes`, title: "Sixes", number: batting.reduce((s, b) => s + b.sixes, 0) },
+    { id: `${seriesId}-tb-fifties`, title: "Fifties", number: batting.reduce((s, b) => s + b.fifties, 0) },
+  ];
+  const ballsBowled = bowling.reduce((s, b) => s + (b.balls ?? 0), 0);
+  const runsConceded = bowling.reduce((s, b) => s + b.runs, 0);
+  const teamBowling = [
+    { id: `${seriesId}-bw-wkts`, title: "Wickets", number: bowling.reduce((s, b) => s + b.wickets, 0) },
+    { id: `${seriesId}-bw-conceded`, title: "Runs Conceded", number: runsConceded },
+    { id: `${seriesId}-bw-dots`, title: "Dot Balls", number: bowling.reduce((s, b) => s + b.dotBalls, 0) },
+    {
+      id: `${seriesId}-bw-econ`,
+      title: "Economy",
+      number: ballsBowled > 0 ? Number((runsConceded / (ballsBowled / 6)).toFixed(2)) : 0,
+    },
+  ];
+
   // topPlayers -> [{ id, playerName, image:[{url}], title, cardValue, playerPosition }]
   const topPlayers = batting.slice(0, 4).map((b) => ({
     id: b.playerId,
@@ -233,8 +254,8 @@ async function buildDetail(series: { id: number; name: string; year: string }) {
     bowlerValue: topBowl?.wickets ?? 0,
     leagueStats,
     topPlayers,
-    teamBatting: [],
-    teamBowling: [],
+    teamBatting,
+    teamBowling,
     resultCards,
     battingNumberZone,
     bowlingNumberZone,
