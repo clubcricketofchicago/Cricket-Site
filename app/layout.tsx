@@ -2,6 +2,8 @@
 
 import { ReactNode } from 'react'
 import Script from 'next/script'
+import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Saira_Condensed, Archivo } from 'next/font/google'
 
 import HeaderNavPanel from './components/ui/HeaderNavPanel'
@@ -62,6 +64,8 @@ gtag('config', 'G-R3N32PZ8ND');`}
           {children}
           <FooterPanel />
         </div>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )
