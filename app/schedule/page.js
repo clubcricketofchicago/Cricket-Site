@@ -5,8 +5,9 @@ export const dynamic = 'force-dynamic';
 import { useEffect, useState, Suspense } from "react";
 import UpcomingMatchPanel from "../components/calendar/UpcomingMatchPanel";
 import DateCalendar from "../components/calendar/DateCalendar";
-import { fetchGraphQL } from "../lib/graphqlClient";
-import { getCalendarQuery } from "../lib/queries/calendarQuery";
+import { ScheduleSkeleton } from "../components/skeletons/PageSkeletons";
+// Calendar data now comes from the local DB (Neon) via /api/schedule (CCC's fixtures),
+// shaped like the old CMS fixture payload.
 
 export default function Page() {
   const [loading, setLoading] = useState(true);
@@ -14,11 +15,9 @@ export default function Page() {
   const [matches, setMatches] = useState(null);
 
   useEffect(() => {
-    const query = getCalendarQuery();
-
-    fetchGraphQL(query)
+    fetch("/api/schedule")
+      .then((r) => r.json())
       .then((data) => {
-        console.log("Calendar API response:", data);
         setMatches(data);
         setLoading(false);
       })
@@ -30,7 +29,7 @@ export default function Page() {
   }, []);
 
   if (loading) {
-    return <div className="loading-message">Loading calendar data...</div>;
+    return <ScheduleSkeleton />;
   }
 
   if (error) {
@@ -62,20 +61,20 @@ export default function Page() {
   };
 
   return (
-    <section className="w-full h-auto bg-repeat-y bg-[100%] aspect-[16/9]">
-      <div className="min-h-screen py-20 text-white">
-        <Suspense
-          fallback={
-            <div className="container mx-auto text-center">Loading matches...</div>
-          }
-        >
-          {/* Pass just the first (earliest) upcoming match to UpcomingMatchPanel */}
-          <UpcomingMatchPanel match={filteredEntries[0]} />
+    // No forced height: the old `min-h-screen` + `aspect-[16/9]` padded the page out
+    // to a full viewport and exposed a big empty band below the short calendar.
+    <div className="py-20 text-[color:var(--text)]">
+      <Suspense
+        fallback={
+          <div className="container mx-auto text-center">Loading matches...</div>
+        }
+      >
+        {/* Pass just the first (earliest) upcoming match to UpcomingMatchPanel */}
+        <UpcomingMatchPanel match={filteredEntries[0]} />
 
-          {/* Pass the full list of upcoming matches to DateCalendar */}
-          <DateCalendar matches={filteredMatches} />
-        </Suspense>
-      </div>
-    </section>
+        {/* Pass the full list of upcoming matches to DateCalendar */}
+        <DateCalendar matches={filteredMatches} />
+      </Suspense>
+    </div>
   );
 }

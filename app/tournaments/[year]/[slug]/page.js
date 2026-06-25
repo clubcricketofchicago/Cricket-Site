@@ -3,15 +3,15 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter, notFound } from "next/navigation";
 
-import { fetchGraphQL } from "../../../lib/graphqlClient";
-import { getFixturesByTournamentSlug } from "../../../lib/queries/fixturesByTournament";
-import { getTournamentPageQuery } from "../../../lib/queries/tournamentPageQuery";
+// Tournament data now comes from the local DB (Neon) via internal API routes
+// (/api/tournaments and /api/tournaments/fixtures), shaped like the old CMS payload.
 
 import LeagueLogoSlider from "../../../components/tournaments/LeagueLogoSlider";
 import PlayerOfTheWeek from "../../../components/tournaments/PlayerOfTheWeek";
 import LeagueHighlights from "../../../components/tournaments/LeagueHighlights";
 import FixturesAndResults from "../../../components/tournaments/FixturesAndResults";
 import NumberZone from "../../../components/tournaments/NumberZone";
+import { TournamentDetailSkeleton } from "../../../components/skeletons/PageSkeletons";
 import Image from "next/image";
 
 const cmsBaseUrl = process.env.NEXT_PUBLIC_CMS_URL || "";
@@ -48,6 +48,17 @@ function StandingListEle({ team }) {
       <div className="SListing_lose">
         <p className="roboto-condensed-bold light_grey p5">{team.loses || 0}</p>
       </div>
+      <div className="SListing_draw">
+        <p className="roboto-condensed-bold light_grey p5">{team.draws || 0}</p>
+      </div>
+      <div className="SListing_nr">
+        <p className="roboto-condensed-bold light_grey p5">{team.noResults || 0}</p>
+      </div>
+      <div className="SListing_pts">
+        <p className="roboto-condensed-bold p5" style={{ color: "var(--orange)" }}>
+          {team.points ?? 0}
+        </p>
+      </div>
     </div>
   );
 }
@@ -72,6 +83,15 @@ function LeagueStandings({ teamStandings }) {
           <div className="SListing_lose">
             <p className="roboto-condensed-bold light_grey p5">L</p>
           </div>
+          <div className="SListing_draw">
+            <p className="roboto-condensed-bold light_grey p5">D</p>
+          </div>
+          <div className="SListing_nr">
+            <p className="roboto-condensed-bold light_grey p5">NR</p>
+          </div>
+          <div className="SListing_pts">
+            <p className="roboto-condensed-bold p5" style={{ color: "var(--orange)" }}>PTS</p>
+          </div>
         </div>
 
         <div className="SListing_listing">
@@ -80,7 +100,7 @@ function LeagueStandings({ teamStandings }) {
               <StandingListEle key={team.id || Math.random().toString()} team={team} />
             ))
           ) : (
-            <div className="p-4 text-center text-[#d8d8d8]">
+            <div className="p-4 text-center text-[color:var(--text-muted)]">
               <p>No standings available</p>
             </div>
           )}
@@ -104,17 +124,14 @@ export default function LeagueStatsContainer() {
 
   const fetchFixturesForTournament = useCallback(
     async (tournament) => {
-      console.log("fetchFixturesForTournament called with tournament slug:", tournament.slug);
       try {
         if (tournament.slug && allFixtures[tournament.slug]) {
-          console.log("Already have fixtures stored for slug:", tournament.slug, allFixtures[tournament.slug]);
           return allFixtures[tournament.slug];
         }
-        const fixtureQuery = getFixturesByTournamentSlug();
-        const variables = { slug: [tournament.slug] };
-        console.log("Using variables:", variables);
-        const fixtureData = await fetchGraphQL(fixtureQuery, variables);
-        console.log("Fixtures API response:", fixtureData);
+        const res = await fetch(
+          `/api/tournaments/fixtures?slug=${encodeURIComponent(tournament.slug)}`
+        );
+        const fixtureData = await res.json();
         const tournamentFixtures = (fixtureData && fixtureData.entries.filter(entry => entry.mappedSeries && entry.mappedSeries.length > 0)) || [];
         if (tournament.slug) {
           setAllFixtures((prev) => ({
@@ -133,26 +150,21 @@ export default function LeagueStatsContainer() {
 
   useEffect(() => {
     const { year, slug } = params || {};
-    console.log("Initial data fetch useEffect triggered with params:", params);
     if (!year || !slug) {
-      console.log("Either year or slug is missing; marking error as true.");
       setError(true);
       setLoading(false);
       return;
     }
 
-    const query = getTournamentPageQuery();
-    fetchGraphQL(query)
+    fetch(`/api/tournaments?year=${encodeURIComponent(year)}`)
+      .then((r) => r.json())
       .then(async (data) => {
-        console.log("Tournament page fetch response:", data);
         const allEntries = (data && data.entries) || [];
         const yearTournaments = allEntries.filter(
           (entry) =>
             entry.typeHandle === "tournamentPage" && entry.parent && entry.parent.slug === year
         );
-        console.log("Filtered yearTournaments:", yearTournaments);
         if (yearTournaments.length === 0) {
-          console.log("No tournaments found for given year:", year);
           setError(true);
           setLoading(false);
           return;
@@ -160,22 +172,15 @@ export default function LeagueStatsContainer() {
         setAllTournaments(yearTournaments);
         const currentIndex = yearTournaments.findIndex((entry) => entry.slug === slug);
         if (currentIndex === -1) {
-          console.log("No matching tournament found with slug:", slug);
           setError(true);
           setLoading(false);
           return;
         }
         setCurrentTournamentIndex(currentIndex);
         const currentTournament = yearTournaments[currentIndex];
-        console.log("current Tournament:");
-        console.log(currentTournament);
         setTournamentData(currentTournament);
-        console.log("Current Tournament data:", currentTournament);
         const fetchedFixtures = await fetchFixturesForTournament(currentTournament);
         setFixtures(fetchedFixtures);
-        console.log("Current Tournament Title:", currentTournament.title);
-        console.log("Fixtures Data:", fetchedFixtures);
-        console.log("Results Data:", currentTournament.resultCards || []);
         setLoading(false);
       })
       .catch((e) => {
@@ -186,15 +191,11 @@ export default function LeagueStatsContainer() {
   }, [params, fetchFixturesForTournament]);
 
   const goToPrevTournament = useCallback(async () => {
-    console.log("goToPrevTournament called");
     if (allTournaments.length <= 1) {
-      console.log("There is only one tournament or none. Aborting prev nav.");
       return;
     }
     const newIndex = (currentTournamentIndex - 1 + allTournaments.length) % allTournaments.length;
     const prevTournament = allTournaments[newIndex];
-    console.log("Navigating to previous tournament index:", newIndex);
-    console.log("Previous tournament slug:", prevTournament.slug);
     setCurrentTournamentIndex(newIndex);
     setTournamentData(prevTournament);
     const { year } = params;
@@ -203,21 +204,14 @@ export default function LeagueStatsContainer() {
     }
     const fetchedFixtures = await fetchFixturesForTournament(prevTournament);
     setFixtures(fetchedFixtures);
-    console.log("Previous Tournament:", prevTournament.title);
-    console.log("Updated Fixtures Data:", fetchedFixtures);
-    console.log("Updated Results Data:", prevTournament.resultCards || []);
   }, [allTournaments, currentTournamentIndex, params, router, fetchFixturesForTournament]);
 
   const goToNextTournament = useCallback(async () => {
-    console.log("goToNextTournament called");
     if (allTournaments.length <= 1) {
-      console.log("There is only one tournament or none. Aborting next nav.");
       return;
     }
     const newIndex = (currentTournamentIndex + 1) % allTournaments.length;
     const nextTournament = allTournaments[newIndex];
-    console.log("Navigating to next tournament index:", newIndex);
-    console.log("Next tournament slug:", nextTournament.slug);
     setCurrentTournamentIndex(newIndex);
     setTournamentData(nextTournament);
     const { year } = params;
@@ -226,17 +220,12 @@ export default function LeagueStatsContainer() {
     }
     const fetchedFixtures = await fetchFixturesForTournament(nextTournament);
     setFixtures(fetchedFixtures);
-    console.log("Next Tournament:", nextTournament.title);
-    console.log("Updated Fixtures Data:", fetchedFixtures);
-    console.log("Updated Results Data:", nextTournament.resultCards || []);
   }, [allTournaments, currentTournamentIndex, params, router, fetchFixturesForTournament]);
 
   if (loading) {
-    console.log("Page is loading; returning null.");
-    return null;
+    return <TournamentDetailSkeleton />;
   }
   if (error || !tournamentData) {
-    console.log("Error or missing tournamentData; rendering notFound().");
     return notFound();
   }
 

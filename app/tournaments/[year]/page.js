@@ -4,9 +4,8 @@ import { useEffect, useState } from 'react';
 import SectionTitleEle from '../../components/ui/SectionTitleEle';
 import Image from 'next/image';
 import Link from 'next/link';
-import { fetchGraphQL } from '../../lib/graphqlClient';
-import { getTournamentPageQuery } from '../../lib/queries/tournamentPageQuery';
 import { usePathname } from 'next/navigation';
+// Tournaments list now comes from the local DB (Neon) via /api/tournaments (includes 2026).
 
 const getFullImageUrl = (url) => {
   const cmsBaseUrl = process.env.NEXT_PUBLIC_CMS_URL || 'https://cms-ccc.ddev.site/';
@@ -25,11 +24,11 @@ function SeriesCard({ imageUrl, seriesName, hyperLink }) {
           src={imageUrl}
           width={750}
           height={960}
-          className="w-full h-auto"
+          className="w-full h-auto object-contain"
           alt={`${seriesName} Flag Image`}
           unoptimized
         />
-        <h4 className="roboto-condensed-med p1 text-white text-center uppercase mt-[2%]">
+        <h4 className="roboto-condensed-med p1 text-[color:var(--text)] text-center uppercase mt-[2%]">
           {seriesName}
         </h4>
       </Link>
@@ -45,8 +44,8 @@ export default function Page() {
   const currentSlug = pathname.split('/').pop();
 
   useEffect(() => {
-    const query = getTournamentPageQuery();
-    fetchGraphQL(query)
+    fetch('/api/tournaments?view=list')
+      .then((r) => r.json())
       .then((data) => {
         if (!data || !data.entries) return;
 
@@ -83,15 +82,15 @@ export default function Page() {
 
   return (
     <section className="allPlayersPanel_header base_paddings">
-      <div className="LSC_parent PlayersPage center_aligned px-[3.5%] py-[2%] bg-white/10 backdrop-blur-sm rounded-[2vw] pb-[6vw]">
+      <div className="LSC_parent PlayersPage center_aligned px-[3.5%] py-[2%] bg-[var(--panel)] border border-[var(--panel-line)] rounded-[2vw] pb-[6vw]">
         <SectionTitleEle>{title}</SectionTitleEle>
-        <hr className="w-full h-[0.1vw] bg-[#FFFFFF] border-none" />
+        <hr className="w-full h-[0.1vw] bg-[var(--panel-line-strong)] border-none" />
         <div className="grid grid-cols-4 gap-[8vw] mt-[5%]">
           {entries.map((entry) => (
             
             <SeriesCard
               key={entry.id}
-              imageUrl={entry.flagImage[0]?.url ? getFullImageUrl(entry.flagImage[0]?.url) : '/images/sample_series_flag.png'}
+              imageUrl={entry.flagImage[0]?.url ? getFullImageUrl(entry.flagImage[0]?.url) : '/images/logo.png'}
               seriesName={entry.title}
               hyperLink={`/tournaments/${currentSlug}/${entry.slug}`}
             />

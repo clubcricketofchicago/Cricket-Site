@@ -25,7 +25,6 @@ export default function BGWithForm() {
       "It3y6Vk01CcKyFTFD"       // your EmailJS public key
     ).then(
       (result) => {
-        console.log(result.text);
         if (result.text === "OK") {
           clearInputFields();
           const scBtn = document.getElementById("SC_BTN");
@@ -37,8 +36,7 @@ export default function BGWithForm() {
           }
         }
       },
-      (error) => {
-        console.log(error.text);
+      () => {
       }
     );
   }

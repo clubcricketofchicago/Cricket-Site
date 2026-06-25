@@ -3,6 +3,7 @@
 import React from "react";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import Image from "next/image";
+import Link from "next/link";
 
 // --- Helper to build full CMS image URLs ---
 const cmsBaseUrl = process.env.NEXT_PUBLIC_CMS_URL || "";
@@ -21,6 +22,8 @@ interface LogoItem {
 
 interface FixtureItem {
   id: string;
+  t1Name?: string;
+  t1Logo?: LogoItem[];
   t2Name?: string;
   t2Logo?: LogoItem[];
   groundsName?: string;
@@ -38,6 +41,10 @@ interface ResultItem {
   teamTwoLogo?: LogoItem[];
   date?: string;
   lightswitch?: boolean;
+  opponentName?: string;
+  opponentLogo?: LogoItem[];
+  cccScore?: string;
+  oppScore?: string;
 }
 
 // --- Reusable sub-component: Location ---
@@ -51,7 +58,7 @@ function MatchLocation({
   return (
     <div className={`match_location ${className ?? ""}`}>
       <div className="match_loc_ico">
-        <img src="/images/near_me_icon.png" alt="location icon" />
+        <img src="/images/near_me_icon.png" alt="location icon" className="ccc-meta-ico" />
       </div>
       <div className="match_loc_info">
         <p className="roboto-condensed-light">{children}</p>
@@ -88,7 +95,7 @@ function MatchDate({
   return (
     <div className={`match_date ${className ?? ""}`}>
       <div className="match_date_ico">
-        <img src="/images/calendar_icon.png" alt="date icon" />
+        <img src="/images/calendar_icon.png" alt="date icon" className="ccc-meta-ico" />
       </div>
       <div className="match_date_info">
         <p>{formattedDate[0]}</p>
@@ -99,33 +106,16 @@ function MatchDate({
   );
 }
 
-// --- Parse "runs/wickets" strings like "223/4" -> { runs: 223, wickets: 4 } ---
-function parseScore(scoreString?: string | null) {
-  if (!scoreString || !scoreString.includes("/")) {
-    return { runs: 0, wickets: 0 };
-  }
-  const [runs, wickets] = scoreString.split("/");
-  return {
-    runs: parseInt(runs || "0", 10) || 0,
-    wickets: parseInt(wickets || "0", 10) || 0,
-  };
-}
-
-// --- Parse overs strings like "19.3/30" -> 19.3 (the bowled overs) ---
-function parseOvers(oversString?: string | null) {
-  if (!oversString) return 0;
-  const [bowledStr] = oversString.split("/");
-  const val = parseFloat(bowledStr);
-  return isNaN(val) ? 0 : val;
-}
-
 // -----------------------------
 // Fixture item for the "Fixtures" tab
 // -----------------------------
 function MatchFixtureEle({ fixture }: { fixture: FixtureItem }) {
-  // We'll treat T2 as the "opponent" for the UI.
-  const opponentName = fixture?.t2Name || "Opponent";
-  const opponentLogoObj = fixture?.t2Logo?.[0];
+  // These are CCC's fixtures, so the opponent is whichever side isn't CCC
+  // (CCC can be listed as either team one or team two).
+  const CCC = "Club Cricket of Chicago";
+  const cccIsT1 = fixture?.t1Name === CCC;
+  const opponentName = (cccIsT1 ? fixture?.t2Name : fixture?.t1Name) || "Opponent";
+  const opponentLogoObj = cccIsT1 ? fixture?.t2Logo?.[0] : fixture?.t1Logo?.[0];
   const opponentLogo = getFullImageUrl(opponentLogoObj?.url);
 
   const location = fixture?.groundsName || "";
@@ -168,97 +158,55 @@ function MatchFixtureEle({ fixture }: { fixture: FixtureItem }) {
 // Result item for the "Results" tab
 // -----------------------------
 function MatchResultEle({ result }: { result: ResultItem }) {
-  const resultString = result?.title || "No result data";
+  // Rendered with the SAME structure as the fixtures card (.MXE_ele + Vs Opponent),
+  // with the scoreline + outcome where a fixture shows its location.
   const isWin = result.lightswitch;
-  const statusColor = isWin ? "rgb(110 198 170)" : "rgb(241 10 10)";
-
-  const { runs: t1Runs, wickets: t1Wkts } = parseScore(result?.t1Score);
-  const t1Ov = parseOvers(result?.t1Overs);
-  const t1LogoObj = result?.teamOneLogo?.[0];
-  const t1Logo = getFullImageUrl(t1LogoObj?.url);
-
-  const { runs: t2Runs, wickets: t2Wkts } = parseScore(result?.t2Score);
-  const t2Ov = parseOvers(result?.t2Overs);
-  const t2LogoObj = result?.teamTwoLogo?.[0];
-  const t2Logo = getFullImageUrl(t2LogoObj?.url);
-
-  const matchDate = result?.date || "";
+  const isTie = /\btie(d)?\b/i.test(result.title || "");
+  const statusColor = isTie ? "var(--text-dim)" : isWin ? "var(--win)" : "var(--loss)";
+  const opponentName = result.opponentName || "Opponent";
+  const opponentLogo = getFullImageUrl(result.opponentLogo?.[0]?.url);
+  const cccScore = result.cccScore || "0/0";
+  const oppScore = result.oppScore || "0/0";
+  const date = result?.date || "";
 
   return (
-    <div className="MRE_ele flex_grid">
-      <div className="main_teamInfo_parent">
-        <div className="w-full my-auto">
-          <div className="teamInfo_parent flex_grid">
-            {/* ---------- Team 1 Info ---------- */}
-            <div className="team_info won_team_info flex_grid">
-              <div className="score_board">
-                <div className="runs_wickets_info">
-                  <p className="roboto-condensed-bold p4">
-                    {t1Runs}/{t1Wkts}
-                  </p>
-                </div>
-                <div className="overs_info">
-                  <p className="roboto-condensed-regular p6">
-                    {t1Ov.toFixed(1)}
-                  </p>
-                </div>
+    <Link
+      href={`/match/${result.id}`}
+      className="block no_underline transition-opacity hover:opacity-90"
+    >
+      {/* same .MXE_ele card as the fixtures (CSS is scoped to div.MXE_ele) */}
+      <div className="MXE_ele flex_grid">
+        <div className="oppo_team flex">
+          <div className="w-full my-auto">
+            <div className="flex_grid">
+              <div className="oppo_vs_text">
+                <p className="white_color roboto-condensed-regular p4">Vs</p>
               </div>
-              <div className="team_info_logo">
-                <Image
-                  src={t1Logo}
-                  alt="Team 1 Logo"
-                  width={24}
-                  height={24}
-                  unoptimized={true}
-                />
+              <div className="oppo_team_ico">
+                <Image src={opponentLogo} alt="Opponent Logo" width={24} height={24} unoptimized />
               </div>
             </div>
-
-            <div className="w-[6%] flex">
-              <p className="white_color roboto-condensed-regular p6 my-auto">
-                Vs
-              </p>
-            </div>
-
-            {/* ---------- Team 2 Info ---------- */}
-            <div className="team_info lost_team_info flex_grid">
-              <div className="team_info_logo">
-                <Image
-                  src={t2Logo}
-                  alt="Team 2 Logo"
-                  width={24}
-                  height={24}
-                  unoptimized={true}
-                />
-              </div>
-              <div className="score_board">
-                <div className="runs_wickets_info">
-                  <p className="roboto-condensed-bold p4">
-                    {t2Runs}/{t2Wkts}
-                  </p>
-                </div>
-                <div className="overs_info">
-                  <p className="roboto-condensed-regular p6">
-                    {t2Ov.toFixed(1)}
-                  </p>
-                </div>
-              </div>
+            <div className="oppo_team_name">
+              <p className="white_color roboto-condensed-regular p6">{opponentName}</p>
             </div>
           </div>
+        </div>
 
-          {/* ---------- Result Status ---------- */}
-          <div className="result_status">
-            <p
-              className="roboto-condensed-regular p6"
-              style={{ color: statusColor }}
-            >
-              {resultString}
+        {/* score + outcome (in place of the fixture's location) */}
+        <div className="w-[42%] flex">
+          <div className="m-auto text-center px-[3%]">
+            <p className="roboto-condensed-bold p5 white_color whitespace-nowrap">
+              {cccScore} <span className="text-[color:var(--text-dim)]">–</span> {oppScore}
+            </p>
+            <p className="roboto-condensed-bold p6" style={{ color: statusColor }}>
+              {isTie ? "TIE" : isWin ? "WON" : "LOST"}
             </p>
           </div>
         </div>
+
+        <MatchDate>{date}</MatchDate>
       </div>
-      <MatchDate>{matchDate}</MatchDate>
-    </div>
+    </Link>
   );
 }
 
@@ -313,9 +261,11 @@ export default function FixturesAndResults({
 
         {hasResults && (
           <TabPanel>
-            {results.slice(0, resultsCount).map((result) => (
-              <MatchResultEle key={result.id} result={result} />
-            ))}
+            <div className="fixtures_container flex_grid">
+              {results.slice(0, resultsCount).map((result) => (
+                <MatchResultEle key={result.id} result={result} />
+              ))}
+            </div>
           </TabPanel>
         )}
       </Tabs>

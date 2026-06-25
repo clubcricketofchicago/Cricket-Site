@@ -7,6 +7,7 @@ import { useRef, useEffect, useState } from 'react'
 import { fetchGraphQL } from '../../lib/graphqlClient'
 import { getNavigationConfig } from '../../lib/queries/navigationQuery'
 import Image from 'next/image'
+import ThemeToggle from './ThemeToggle'
 
 function NavEleIco({ iconData }) {
   const cmsBaseUrl = process.env.NEXT_PUBLIC_CMS_URL || 'https://cms-ccc.ddev.site/'
@@ -164,6 +165,7 @@ export default function HeaderNavPanel() {
           ) : (
             <NavContainer navigationItems={navigationItems} />
           )}
+          <ThemeToggle />
           <MobileNav />
         </div>
       </header>
@@ -183,7 +185,7 @@ export default function HeaderNavPanel() {
                     <Link
                       href={getFullUrl(item.hyperlink.url)}
                       target={item.hyperlink.url.startsWith('http') ? '_blank' : undefined}
-                      className="roboto-condensed-regular no_underline p2 content_black"
+                      className="roboto-condensed-regular no_underline p2 white_color"
                     >
                       {item.title}
                     </Link>

@@ -9,12 +9,12 @@ const SOCIAL_LINKS = [
   { href: 'https://twitter.com', icon: 'TwitterLogoWhite.svg', alt: 'Twitter' },
   { href: 'https://instagram.com', icon: 'InstagramIconWhite.svg', alt: 'Instagram' },
   { href: 'https://facebook.com', icon: 'FacebookiconWhite.svg', alt: 'Facebook' },
-  { href: 'https://youtube.com', icon: 'YoutubeLogoWhite.svg', alt: 'YouTube' },
+  { href: 'https://www.youtube.com/channel/UClH02lUKHkbEsWTlvBtNCkQ', icon: 'YoutubeLogoWhite.svg', alt: 'YouTube' },
 ]
 
 // Navigation links
 const FOOTER_LINKS = [
-  { href: '/calendar', label: 'Schedule' },
+  { href: '/schedule', label: 'Schedule' },
   { href: '/tournaments', label: 'Tournaments' },
   { href: '/players', label: 'Players' },
   { href: 'https://www.youtube.com/channel/UClH02lUKHkbEsWTlvBtNCkQ', label: 'CCTV', newTab: true },
@@ -38,7 +38,7 @@ function SocialIcon({ href, icon, alt }) {
 
 export default function FooterPanel() {
   return (
-    <footer className="bg-black text-white pt-12 pb-4">
+    <footer className="bg-[var(--ink-2)] text-[color:var(--text)] pt-12 pb-4">
       <div className="base_paddings">
         <div className="flex_grid max_content center_aligned justify-between flex-wrap">
           {/* Logo Section */}
@@ -75,7 +75,7 @@ export default function FooterPanel() {
                     <Link
                       href={link.href}
                       target={link.newTab ? "_blank" : undefined}
-                      className="roboto-condensed-regular p3 white_color no_underline hover:text-gray-300 transition-colors"
+                      className="roboto-condensed-regular p3 white_color no_underline hover:text-[color:var(--orange)] transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -101,7 +101,7 @@ export default function FooterPanel() {
         </div>
         
         {/* Copyright Section */}
-        <div className="text-center mt-12 pt-4 border-t border-gray-800">
+        <div className="text-center mt-12 pt-4 border-t border-[var(--panel-line)]">
           <p className="roboto-condensed-light p5 grey_text">
             Copyrights CCC {new Date().getFullYear()}, All Rights Reserved.
           </p>

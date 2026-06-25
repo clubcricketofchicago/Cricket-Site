@@ -26,6 +26,7 @@ export default function NumberZone({
     hundreds: player?.hundreds || 0,
     notOuts: player?.no || 0,
     highestScore: player?.hs || 0,
+    rank: player?.rank ?? null,
   }));
 
   const bowlingData = bowlingNumberZone.map((player) => ({
@@ -41,6 +42,7 @@ export default function NumberZone({
     fourWickets: player?.fourW || 0,
     fiveWickets: player?.fiveW || 0,
     dotBalls: player?.db || 0,
+    rank: player?.rank ?? null,
   }));
 
   const fieldingData = fieldingNumberZone.map((player) => ({
@@ -53,6 +55,7 @@ export default function NumberZone({
     indirect: player?.idr || 0,
     stumpings: player?.stm || 0,
     total: player?.to || 0,
+    rank: player?.rank ?? null,
   }));
 
   const rankingData = rankingZone.map((player) => ({
@@ -63,6 +66,7 @@ export default function NumberZone({
     fieldingPoints: player?.fieldingPoints || 0,
     otherPoints: player?.otherPoints || 0,
     total: player?.total || 0,
+    rank: player?.rank ?? null,
   }));
 
   return (

@@ -245,7 +245,9 @@ function BGSlider({ groundsData }: { groundsData: GroundData[] }) {
           className={`homeGround_logo ${!homeGround.homegroundStatus ? 'hidden_ele' : ''}`}
         >
           <Image src="/images/logo.png" alt="Home Ground Logo" width={100} height={60} unoptimized />
-          <p className="oswald-bold p1 text-black uppercase">Home Ground</p>
+          {/* Sits on the fixed translucent-white .homeGround_logo badge (globals.css,
+              same in both themes), so the label stays a fixed dark ink in both. */}
+          <p className="oswald-bold p1 text-[#1a0d05] uppercase">Home Ground</p>
         </div>
       )}
     </>
@@ -264,7 +266,6 @@ export default function GroundSlider() {
         const data = await fetchGraphQL(query)
 
         if (data && data.entries) {
-          console.log('GraphQL Grounds data:', data.entries)
           setGroundsData(data.entries)
         } else {
           throw new Error('No grounds data returned from API')
