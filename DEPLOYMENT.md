@@ -5,7 +5,8 @@ plus **Craft CMS** for editorial content. Merging to `main` only ships the code 
 steps below must be done **on the hosting environment** before it serves real data.
 
 ## 1. Environment variables
-Set every variable from [`.env.example`](.env.example) on the host (none are committed):
+Set every variable from [`.env.example`](.env.example) on the host (none are committed).
+On Vercel: **Project Settings → Environment Variables** (Production scope).
 
 | Var | Purpose |
 | --- | --- |
@@ -37,8 +38,15 @@ curl -H "Authorization: Bearer $CRON_SECRET" https://<your-domain>/api/sync
 ```
 
 ## 5. Keep data fresh (cron)
-Schedule `GET /api/sync` (same Bearer auth) on a recurring interval — Vercel Cron, a
-platform scheduler, or an external cron hitting the URL.
+[`vercel.json`](vercel.json) registers a **Vercel Cron** that calls `GET /api/sync` every
+6 hours (`0 */6 * * *`). Vercel automatically attaches `Authorization: Bearer $CRON_SECRET`
+to cron requests, so once `CRON_SECRET` is set (step 1) the endpoint is authenticated with
+no extra wiring. Adjust the schedule in `vercel.json` to taste.
+
+> **Needs the Vercel Pro plan.** The full sync runs longer than Hobby's 60s function limit
+> (`/api/sync` sets `maxDuration = 300`) and sub-daily crons are Pro-only. On Hobby the sync
+> would be cut off mid-run — instead run `npm run sync` from an external scheduler against
+> the same `DATABASE_URL` / `DIRECT_URL`.
 
 ## Notes
 - **Neon auto-suspends when idle**, so the first request after a quiet period is a slow
