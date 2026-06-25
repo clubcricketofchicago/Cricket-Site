@@ -97,17 +97,16 @@ export async function syncFixtures(): Promise<number> {
   }
 
   // Reconcile against the feed. getSchedule() returns CCC's COMPLETE set of currently
-  // scheduled (unplayed) fixtures, so any stored fixture missing from it has been played
-  // (it moves to the match/results table), cancelled, or postponed out — delete those
-  // stale rows, otherwise a fixture keeps matchId=0 forever and shows as "upcoming"
-  // indefinitely. This includes the legitimately-empty feed (off-season, or every
-  // upcoming fixture cancelled), where ALL stored fixtures are stale. A failed feed call
-  // throws above, so reaching here means the feed is authoritative; the fixtures table is
-  // a rebuildable cache, so even a fluke empty response self-heals on the next sync.
+  // scheduled (unplayed) fixtures, so a NON-EMPTY feed is authoritative: drop any stored
+  // fixture it no longer lists (played -> moved to the match table, cancelled, or
+  // postponed out). An EMPTY feed is ambiguous — a genuine off-season looks identical to
+  // a fluke upstream blip — so there we only prune fixtures whose date has already passed
+  // (clearly stale) and never future ones, so a fluke empty response can't blank out the
+  // upcoming-fixtures section. A real empty schedule still drains naturally as dates pass.
   if (seenIds.length > 0) {
     await prisma.fixture.deleteMany({ where: { id: { notIn: seenIds } } });
   } else {
-    await prisma.fixture.deleteMany({});
+    await prisma.fixture.deleteMany({ where: { matchDateTime: { lt: new Date() } } });
   }
   return list.length;
 }
