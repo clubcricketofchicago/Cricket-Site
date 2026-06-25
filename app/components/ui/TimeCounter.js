@@ -41,8 +41,12 @@ export default function TimeCounter({ matchDate, matchTime, className = "" }) {
     }
 
     const initCounter = () => {
-      const formattedDate = convertTimestamp(matchDate, matchTime);
-      const countDownDate = new Date(formattedDate).getTime();
+      // A full ISO instant (contains "T") is the exact match time — count to it directly;
+      // otherwise build the target from the date + time strings (parsed in local time).
+      const countDownDate =
+        typeof matchDate === "string" && matchDate.includes("T")
+          ? new Date(matchDate).getTime()
+          : new Date(convertTimestamp(matchDate, matchTime)).getTime();
 
       interval = setInterval(() => {
         const now = new Date().getTime();
