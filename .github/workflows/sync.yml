@@ -1,0 +1,34 @@
+name: Sync CricClubs data
+
+# Keeps the Neon DB fresh from CricClubs (the site reads from the DB). Runs on a schedule
+# and can be triggered manually. Requires repo secrets:
+#   DATABASE_URL, DIRECT_URL, X_API_KEY, X_CONSUMER_KEY
+# (Public repo → Actions minutes are free.)
+
+on:
+  schedule:
+    - cron: "0 */4 * * *" # every 4 hours (UTC)
+  workflow_dispatch: {} # manual "Run workflow" button
+
+concurrency:
+  group: cricclubs-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      X_API_KEY: ${{ secrets.X_API_KEY }}
+      X_CONSUMER_KEY: ${{ secrets.X_CONSUMER_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Sync CricClubs -> Neon
+        run: npm run sync
