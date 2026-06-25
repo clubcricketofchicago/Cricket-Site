@@ -3,7 +3,7 @@
 // records per-entity status in `sync_state` (one failing step never aborts the rest).
 
 import { prisma } from "../db/prisma";
-import { CCC_TEAM_IDS, TRACKED_SERIES } from "../cricclubs/config";
+import { CCC_TEAM_IDS, TRACKED_SERIES, ACTIVE_SEASON_YEAR } from "../cricclubs/config";
 import {
   getBattingStats,
   getBowlingStats,
@@ -421,10 +421,15 @@ export async function syncAll(): Promise<{
   steps.series = await runStep("series", syncSeries);
   steps.fixtures = await runStep("fixtures", syncFixtures);
 
-  // Per series, fetch the six endpoints concurrently (bounded burst of 6 — well within
-  // CricClubs limits, and cricFetch retries any throttling); keep SERIES sequential so we
-  // never fan out to 14×6 calls at once.
-  for (const { id } of TRACKED_SERIES) {
+  // Routine syncs only touch the ACTIVE season; finished seasons are immutable and already
+  // mirrored, so skip them to stay well under the CricClubs rate limit. SYNC_ALL=1 forces a
+  // full backfill of every tracked series. Per series, fetch the six endpoints concurrently
+  // (bounded burst of 6); keep series sequential so we never fan out to 13×6 calls at once.
+  const seriesToSync =
+    process.env.SYNC_ALL === "1"
+      ? TRACKED_SERIES
+      : TRACKED_SERIES.filter((s) => s.year === ACTIVE_SEASON_YEAR);
+  for (const { id } of seriesToSync) {
     const [teams, matches, standings, batting, bowling, fielding] = await Promise.all([
       runStep(`teams:${id}`, () => syncTeams(id)),
       runStep(`matches:${id}`, () => syncMatches(id)),

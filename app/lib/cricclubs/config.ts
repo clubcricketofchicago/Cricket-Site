@@ -41,6 +41,10 @@ export const TRACKED_SERIES: { id: number; name: string; year: string }[] = [
 
 export const TRACKED_SERIES_IDS = TRACKED_SERIES.map((s) => s.id);
 
+/** The season currently in progress. Routine syncs only refresh this year's series;
+ * finished seasons are immutable, so they're backfilled once (or via SYNC_ALL=1). */
+export const ACTIVE_SEASON_YEAR = "2026";
+
 /** Club Cricket of Chicago's own team entries — one per Summer 2026 division. */
 export const CCC_TEAM_IDS = [2677, 2686, 2714];
 
