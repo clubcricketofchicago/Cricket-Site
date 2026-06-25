@@ -116,15 +116,19 @@ async function buildDetail(series: { id: number; name: string; year: string }) {
     },
   ];
 
-  // topPlayers -> [{ id, playerName, image:[{url}], title, cardValue, playerPosition }]
-  const topPlayers = batting.slice(0, 4).map((b) => ({
-    id: b.playerId,
-    playerName: fullName(b.firstName, b.lastName) || "Unknown Player",
-    image: [{ url: img(b.profilePic) }],
-    title: "Top Run Scorer",
-    cardValue: b.runs,
-    playerPosition: "Batsman",
-  }));
+  // topPlayers -> the tournament's top individual SCORES (highest single-innings score,
+  // not aggregate runs), ranked by highest score.
+  const topPlayers = [...batting]
+    .sort((a, b) => (b.highestScore ?? 0) - (a.highestScore ?? 0))
+    .slice(0, 4)
+    .map((b) => ({
+      id: b.playerId,
+      playerName: fullName(b.firstName, b.lastName) || "Unknown Player",
+      image: [{ url: img(b.profilePic) }],
+      title: "Top Score",
+      cardValue: b.highestScore ?? 0,
+      playerPosition: "Batsman",
+    }));
 
   // Win/loss colour from Club Cricket of Chicago's perspective (CCC's teamId differs
   // per series, so match by name). Non-CCC matches fall back to team-one.
