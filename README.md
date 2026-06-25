@@ -1,37 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Club Cricket of Chicago — website
 
-## Getting Started
+The public site for **Club Cricket of Chicago (CCC)**, a competitive cricket club in
+Chicago. Live at **https://www.clubcricketofchicago.com**.
 
-First, run the development server:
+It shows the club's season hub, schedule, tournaments (standings + stat tables), player
+roster and profiles, match scorecards, grounds, the academy, and a join-us form.
+
+## How it's built
+
+- **Next.js 16** (App Router) · **React 19** · **TypeScript** · **Tailwind CSS 3**
+- **Prisma + Neon Postgres** — a mirror of competitive cricket data
+- **Craft CMS** (GraphQL) — editorial content (home blocks, sponsors, nav, grounds, academy)
+
+**Data flow (hybrid):** fixtures, results, standings, player & tournament stats are
+synced from the **CricClubs** API into **Neon Postgres** and read through cached
+server-side helpers (`app/lib/data/*`); editorial content comes from **Craft CMS**. The
+sync lives in `app/lib/sync` and runs via `GET /api/sync` (cron) or `npm run sync`.
+
+UI is the **"Blue Hour / Chicago Dusk"** design system with light + dark mode and a traced
+Chicago-skyline signature.
+
+## Run locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env      # fill in DATABASE_URL + the CricClubs/CMS keys
+npm install               # postinstall runs `prisma generate`
+npx prisma db push        # apply the schema to your DB
+npm run sync              # populate the DB from CricClubs (optional but recommended)
+npm run dev               # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Scripts
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Command | What it does |
+| --- | --- |
+| `npm run dev` / `build` / `start` | Next.js dev / production build / serve |
+| `npm run lint` | ESLint (`eslint app`) |
+| `npm run sync` | Sync CricClubs → Postgres |
+| `npm run db:push` / `db:studio` | Apply schema / open Prisma Studio |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Docs
 
-## Learn More
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** — production deploy (Vercel) + the data-sync cron
+- **[docs/DATA_LAYER.md](docs/DATA_LAYER.md)** — the CricClubs→Postgres data layer
+- **[CLAUDE.md](CLAUDE.md)** — architecture guide for contributors / AI agents
+- **[HUMAN.md](HUMAN.md)** — plain-English overview (no coding needed)
 
-To learn more about Next.js, take a look at the following resources:
+## Sibling project
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# Cricket-Site
+`../cricketoverlays` is the club's live broadcast-overlay tool (Laravel) — a separate app
+that shares the same CricClubs account but doesn't talk to this site.

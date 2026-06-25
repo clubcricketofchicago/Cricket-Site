@@ -1,8 +1,18 @@
 # Deployment
 
 The site is a Next.js 16 app backed by **Neon Postgres** (a mirror of CricClubs data)
-plus **Craft CMS** for editorial content. Merging to `main` only ships the code — the
-steps below must be done **on the hosting environment** before it serves real data.
+plus **Craft CMS** for editorial content.
+
+> **Current production:** deployed on **Vercel** under the club's account (team
+> `ccc-2022`, project `cricket-site`), **GitHub-connected** to
+> `clubcricketofchicago/Cricket-Site` → pushes to `main` auto-deploy. The domain
+> `clubcricketofchicago.com` (apex + `www`) is attached to this project; DNS is at
+> **Hostinger**. Env vars are set in **Vercel → Settings → Environment Variables
+> (Production)**. The data **sync is not yet scheduled** — set up a GitHub Action or the
+> VPS cron (`scripts/sync-cron.sh`) to keep it fresh (see §5).
+
+The rest of this doc is the generic runbook (for re-deploying or moving hosts). The steps
+below configure a hosting environment from scratch.
 
 ## 1. Environment variables
 Set every variable from [`.env.example`](.env.example) on the host (none are committed).
