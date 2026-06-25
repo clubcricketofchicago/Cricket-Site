@@ -1,8 +1,18 @@
 # Deployment
 
 The site is a Next.js 16 app backed by **Neon Postgres** (a mirror of CricClubs data)
-plus **Craft CMS** for editorial content. Merging to `main` only ships the code — the
-steps below must be done **on the hosting environment** before it serves real data.
+plus **Craft CMS** for editorial content.
+
+> **Current production:** deployed on **Vercel** under the club's account (team
+> `ccc-2022`, project `cricket-site`), **GitHub-connected** to
+> `clubcricketofchicago/Cricket-Site` → pushes to `main` auto-deploy. The domain
+> `clubcricketofchicago.com` (apex + `www`) is attached to this project; DNS is at
+> **Hostinger**. Env vars are set in **Vercel → Settings → Environment Variables
+> (Production)**. The data **sync is not yet scheduled** — set up a GitHub Action or the
+> VPS cron (`scripts/sync-cron.sh`) to keep it fresh (see §5).
+
+The rest of this doc is the generic runbook (for re-deploying or moving hosts). The steps
+below configure a hosting environment from scratch.
 
 ## 1. Environment variables
 Set every variable from [`.env.example`](.env.example) on the host (none are committed).
@@ -70,6 +80,52 @@ Expect `✓` lines with row counts and `Done in <ms> — N ok, 0 failed.`
 > `GET /api/sync` (the route already validates `Authorization: Bearer $CRON_SECRET`, which
 > Vercel attaches automatically). But it runs as a Vercel function, so it needs **Pro**
 > (Hobby caps functions at 60s and crons at once-daily).
+
+## Self-host the whole frontend on the VPS (instead of Vercel)
+Puts the Next.js site on the **same Hostinger VPS** as the CMS + sync cron, fully under
+your control and with no Vercel function limits. Config templates live in [`deploy/`](deploy/).
+
+**Prereqs on the VPS:** Node 20+, nginx (already running for the CMS), and ~2 GB RAM free
+for `next build` (add swap if the plan is small).
+
+```bash
+# 1) check out the repo
+sudo git clone <repo-url> /srv/cricket-site && cd /srv/cricket-site
+sudo chown -R "$USER":"$USER" /srv/cricket-site
+
+# 2) env + build
+cp .env.example .env            # fill in the real values
+npm ci && npm run build
+
+# 3) run it as a service (edit User= and paths in the unit first)
+sudo cp deploy/cricket-site.service /etc/systemd/system/cricket-site.service
+sudo systemctl daemon-reload && sudo systemctl enable --now cricket-site
+curl -I localhost:3000          # expect HTTP 200
+
+# 4) reverse proxy + TLS
+sudo cp deploy/nginx-cricket-site.conf /etc/nginx/sites-available/cricket-site
+sudo ln -s /etc/nginx/sites-available/cricket-site /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+sudo certbot --nginx -d clubcricketofchicago.com -d www.clubcricketofchicago.com
+```
+
+**5) Point the domain at the VPS** — in the **Hostinger DNS panel** for
+`clubcricketofchicago.com` (DNS already lives there), change the records currently aimed at
+Vercel to the VPS IP (`93.127.215.201`, the same box as the CMS):
+
+| Record | From (Vercel) | To (VPS) |
+| --- | --- | --- |
+| `@` apex `A` | `216.198.79.1` | `93.127.215.201` |
+| `www` `CNAME` → | `…vercel-dns-017.com` | `A` → `93.127.215.201` |
+
+Within the DNS TTL the public domain serves from the VPS. The domain itself never changes.
+(Optional cleanup: remove the domain from the Vercel project afterward.)
+
+**Future deploys:** `cd /srv/cricket-site && ./deploy/deploy.sh` (pull → build → restart).
+Wire it to a GitHub Action / webhook for push-to-deploy if you want.
+
+The sync cron (section 5) already runs on this same box, so the whole stack — frontend,
+sync, CMS — lives on one server you control.
 
 ## Notes
 - **Neon auto-suspends when idle**, so the first request after a quiet period is a slow

@@ -1,0 +1,31 @@
+# Club Cricket of Chicago — Next.js frontend (production, self-hosted on the VPS).
+#
+# Install:
+#   sudo cp deploy/cricket-site.service /etc/systemd/system/cricket-site.service
+#   # edit User= / WorkingDirectory= below to match the box
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now cricket-site
+#   systemctl status cricket-site
+#
+# We run `next start` (not the standalone bundle) because the full node_modules is present
+# on the VPS — that keeps Prisma's query-engine binary resolvable with zero extra wiring.
+
+[Unit]
+Description=Club Cricket of Chicago - Next.js frontend
+After=network.target
+
+[Service]
+Type=simple
+# The OS user that owns the checkout (NOT root). Change to your VPS user.
+User=ccc
+WorkingDirectory=/srv/cricket-site
+Environment=NODE_ENV=production
+Environment=PORT=3000
+# `bash -lc` so nvm/system node is on PATH; source the dotenv-style .env (handles the
+# quoted values that a plain systemd EnvironmentFile= would mangle), then run the server.
+ExecStart=/usr/bin/env bash -lc 'set -a; [ -f .env ] && . ./.env; set +a; exec ./node_modules/.bin/next start -p ${PORT}'
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

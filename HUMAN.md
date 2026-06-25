@@ -5,98 +5,84 @@ information comes from. No deep coding knowledge required.
 
 ## In one sentence
 
-This is the **public website for Club Cricket of Chicago (CCC)** — the kind of site
-a fan or a would-be player visits to learn about the club, see upcoming matches,
-browse tournaments and standings, look up players, and sign up to join.
+This is the **public website for Club Cricket of Chicago (CCC)** — the site a fan or a
+would-be player visits to see upcoming matches, browse tournaments and standings, look up
+players, and sign up to join. It's live at **www.clubcricketofchicago.com**.
 
 ## What's on the site
 
-- **Home page** — hero banners, a season countdown, featured fixtures, sponsors,
-  and "meet the management."
-- **Schedule** — an interactive calendar showing upcoming matches.
-- **Tournaments** — organized by year; each tournament has standings, "player of
-  the week," highlights, fixtures & results, and detailed stat tables (batting,
-  bowling, fielding, rankings).
-- **Players** — a roster of player cards (with a gold/silver/bronze tier look). Click
-  a player to open a pop-up with their full batting and bowling statistics.
-- **Grounds** — a gallery of the club's playing grounds with details and maps.
-- **CCC Academy** — a page about the club's coaching/academy program.
-- **Join Us** — a recruitment form for people who want to play for the club (it even
-  asks for a "CricClub Player ID").
+- **Home page** — hero, a season "hub" (top performers, division standings, recent
+  results), a countdown, featured fixtures, sponsors, and "meet the management."
+- **Schedule** — an interactive calendar of upcoming matches.
+- **Tournaments** — organized by year; each has standings, a "top player" highlight,
+  league stats, fixtures & results, and detailed stat tables (batting/bowling/fielding/
+  rankings).
+- **Players** — a roster of player cards; click "View Profile" for a player's full
+  career stats.
+- **Match pages, Grounds, CCC Academy, Join Us** — scorecards, a grounds gallery, the
+  academy page, and a recruitment form.
+
+The whole site has a **"Blue Hour / Chicago Dusk"** look with a **light and dark mode**
+(toggle the sun/moon) and a Chicago-skyline signature.
 
 ## Where does the data come from?
 
-This is the key question, and the answer has **two parts**:
+There are **two sources**, and the split changed recently — this is the important part:
 
-1. **Most of the website's content comes from a Content Management System (CMS).**
-   The club's staff edit text, images, fixtures, tournament results, player
-   profiles, sponsors, and navigation in a **Craft CMS** behind the scenes. The
-   website then pulls that content in (via a technology called GraphQL) and displays
-   it. So when you see the home page, the players list, tournament standings, the
-   schedule — almost all of that is coming from the CMS, **not** from CricClubs.
+1. **Competitive cricket data comes from CricClubs, stored in the club's own database.**
+   CricClubs is the league platform that tracks scores, fixtures, standings, and player
+   stats. The site **syncs** that information into its own database (Neon Postgres) on a
+   schedule, and the pages read from there. So the schedule, results, standings, player
+   numbers, and tournament tables you see are **real CricClubs data**, kept fresh
+   automatically. (This used to be typed into the CMS by hand — now it's pulled
+   automatically from CricClubs.)
 
-2. **CricClubs is used only for one thing: detailed player stats.** CricClubs is a
-   real cricket league platform that tracks scoring. On this site, the **only** time
-   it's used is when you open a player's profile and click "Show Full Stats" — at
-   that moment the site quietly asks CricClubs for that player's batting and bowling
-   numbers and shows them in the pop-up. That's it. The schedule, the standings, the
-   match results you see elsewhere on the site are **not** pulled live from
-   CricClubs — they're entered in the CMS.
+2. **Editorial content comes from a Content Management System (CMS).** The club's staff
+   edit the marketing-style content — home-page banners, sponsors, "meet the management,"
+   navigation, the grounds, and the academy page — in a **Craft CMS**, and the site
+   displays it.
 
-There is also a little bit of **static information baked into the site** (a couple
-of JSON files): the management team bios and a grounds list. These look like older
-fallback data — the live pages now get the equivalent from the CMS.
+So, to be precise:
+> **Cricket data (fixtures, results, standings, stats) = CricClubs → the club's database.
+> Editorial content (banners, sponsors, nav, grounds, academy) = Craft CMS.**
 
-And there is **no database** of its own. The site doesn't store data; it fetches it
-fresh from the CMS (and, for player stats, from CricClubs) each time a visitor loads
-a page.
-
-**So, to be precise:**
-> The website's data is **mostly from the club's own Craft CMS**. **CricClubs is
-> involved only for on-demand player batting/bowling stats** — it is not the source
-> of the fixtures, standings, or general content.
+There's also a tiny bit of static fallback data baked in (a management list, a grounds
+list) that the live pages mostly get from the CMS instead.
 
 ## How the two compare to the sibling project
 
-There's a separate project next door, **`../cricketoverlays`** (a Laravel app). That
-one is the **live broadcast-graphics tool** — it draws scoreboards on top of match
-video streams, and it gets *all* its data from CricClubs. This project (the website)
-is different: it's mostly CMS-driven and only touches CricClubs for player stats.
+There's a separate project next door, **`../cricketoverlays`** (a Laravel app) — the
+**live broadcast-graphics tool** that draws scoreboards on top of match video. Both belong
+to the same club and use the same CricClubs account, but they **don't talk to each other**.
 
-The two projects belong to the same club and use the same CricClubs account, but
-they **don't talk to each other** — they just happen to share that one upstream
-service.
+## Where it lives (hosting)
+
+The website runs on **Vercel**, under the club's own account, connected to the club's
+GitHub. Whenever a change is pushed, it redeploys automatically. The domain
+`clubcricketofchicago.com` points at it. Everything — the code, the hosting, and the
+domain — is under the club's control.
 
 ## What's solid vs. rough
 
-This is an **active work-in-progress**, with a real, functioning site but a number
-of rough edges worth knowing about:
+This started as a work-in-progress and went through a big rebuild; it's now a real,
+running production site:
 
-- **The pages work** and pull live content from the CMS as described.
-- **A footer "Schedule" link is broken** — it points to `/calendar`, but the real
-  page is `/schedule`, so that particular link leads to a "not found" page.
-- **There are two competing configuration files** (`next.config.js` and
-  `next.config.ts`) with slightly different settings — the project should keep one.
-- **A whole `src/` folder is unused leftover scaffolding** — it looks like part of
-  the app but nothing actually loads it. The real code lives in the `app/` folder.
-- **The contact-form email credentials are written directly into the code** (the
-  Join Us form), which is a tidiness/security item to revisit.
-- Some technical niceties (SEO/social-preview metadata, faster server-side data
-  loading) aren't fully wired up yet, and there are a few stray leftover files and
-  debug log lines.
-
-None of these stop the site from working; they're the kind of cleanup items a
-developer would tackle as the project matures.
+- **It works** and serves live CricClubs data + CMS content.
+- **The site is fully deployed** on the club's own accounts with the real domain.
+- A handful of earlier rough edges were cleaned up (the broken footer link, duplicate
+  config files, a stale lint setup, dead "show full stats" pop-up).
+- **Still on the tidy-up list:** the contact-form email keys are written into the code,
+  and the data sync needs a scheduled job set up to keep refreshing automatically (the
+  data is correct now; this just keeps it current over the season).
 
 ## Tech, briefly
 
-- Built with **Next.js** and **React** (modern web framework).
-- Content comes from a **Craft CMS** over the internet; player stats come from
-  **CricClubs** on demand. No database of its own.
-- Styling uses **Tailwind CSS** plus a large custom stylesheet; carousels,
-  animations, and a calendar are powered by common web libraries.
+- Built with **Next.js** and **React**.
+- **Cricket data** is synced from **CricClubs** into a **Postgres database** (Neon);
+  **editorial content** comes from a **Craft CMS**.
+- Styling uses **Tailwind CSS** plus a large custom stylesheet (the dusk/light theme);
+  carousels, animations, and the calendar use common web libraries.
 
 ## Related project
 
-See **`../cricketoverlays`** for the live broadcast-overlay tool described above —
-the same club, a different job.
+See **`../cricketoverlays`** for the live broadcast-overlay tool — same club, different job.
