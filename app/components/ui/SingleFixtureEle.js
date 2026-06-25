@@ -1,18 +1,28 @@
 'use client'
 
-import { format } from 'date-fns'
 import Image from 'next/image'
 import MatchDate from './MatchDate'
 import MatchLocation from './MatchLocation'
 
+const CHICAGO_TZ = 'America/Chicago'
+
 export default function SingleFixtureEle({ fixture, isActive = false, cmsBaseUrl = 'http://cms.ccc.clubcricketofchicago.com/' }) {
+  // Show the match date and (when it has a real start time) the time in Central Time
+  // (Chicago — CST/CDT). Date-only fixtures show just the date, with no timezone shift.
   const formatMatchDate = (dateString) => {
-    try {
-      return format(new Date(dateString), 'dd MMM yyyy')
-    } catch (error) {
-      console.error('Error formatting date:', error)
-      return dateString
-    }
+    const d = new Date(dateString)
+    if (isNaN(d.getTime())) return dateString
+    const dateOnly = d.getUTCHours() === 0 && d.getUTCMinutes() === 0
+    const datePart = d.toLocaleDateString('en-US', {
+      day: '2-digit', month: 'short', year: 'numeric',
+      timeZone: dateOnly ? 'UTC' : CHICAGO_TZ,
+    })
+    if (dateOnly) return datePart
+    const timePart = d.toLocaleTimeString('en-US', {
+      hour: 'numeric', minute: '2-digit',
+      timeZone: CHICAGO_TZ, timeZoneName: 'short',
+    })
+    return `${datePart} · ${timePart}`
   }
 
   const getFullImageUrl = (url) => {

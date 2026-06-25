@@ -26,19 +26,24 @@ function pickNextMatch(fixtures) {
   return upcoming[0] ?? null
 }
 
-// Format the stored calendar date in UTC to avoid the known off-by-one shift.
+// Match times are real instants; show them in Central Time (Chicago — CST/CDT). A
+// date-only fixture (midnight UTC) carries no real time, so render just its date with no
+// timezone shift (avoids the off-by-one).
+const CHICAGO_TZ = 'America/Chicago'
 function formatMatch(iso) {
   if (!iso) return null
   const d = new Date(iso)
   if (isNaN(d.getTime())) return null
-  const weekday = d.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' })
-  const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
-  const h = d.getUTCHours()
-  const m = d.getUTCMinutes()
-  const hasTime = !(h === 0 && m === 0)
-  const time = hasTime
-    ? d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' })
-    : null
+  const dateOnly = d.getUTCHours() === 0 && d.getUTCMinutes() === 0
+  const TZ = dateOnly ? 'UTC' : CHICAGO_TZ
+  const weekday = d.toLocaleDateString('en-US', { weekday: 'short', timeZone: TZ })
+  const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: TZ })
+  const time = dateOnly
+    ? null
+    : d.toLocaleTimeString('en-US', {
+        hour: 'numeric', minute: '2-digit',
+        timeZone: CHICAGO_TZ, timeZoneName: 'short',
+      })
   return { weekday, date, time }
 }
 
