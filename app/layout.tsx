@@ -1,6 +1,7 @@
 'use client'
 
 import { ReactNode } from 'react'
+import Script from 'next/script'
 import { Saira_Condensed, Archivo } from 'next/font/google'
 
 import HeaderNavPanel from './components/ui/HeaderNavPanel'
@@ -45,6 +46,17 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
       </head>
       <body>
+        {/* Google Analytics (GA4) — loaded after the page is interactive. */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-R3N32PZ8ND"
+          strategy="afterInteractive"
+        />
+        <Script id="ga4-init" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-R3N32PZ8ND');`}
+        </Script>
         <div className="site_shell">
           <HeaderNavPanel />
           {children}
