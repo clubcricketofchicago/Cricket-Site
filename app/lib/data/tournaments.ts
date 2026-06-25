@@ -116,20 +116,6 @@ async function buildDetail(series: { id: number; name: string; year: string }) {
     },
   ];
 
-  // topPlayers -> the tournament's top individual SCORES (highest single-innings score,
-  // not aggregate runs), ranked by highest score.
-  const topPlayers = [...batting]
-    .sort((a, b) => (b.highestScore ?? 0) - (a.highestScore ?? 0))
-    .slice(0, 4)
-    .map((b) => ({
-      id: b.playerId,
-      playerName: fullName(b.firstName, b.lastName) || "Unknown Player",
-      image: [{ url: img(b.profilePic) }],
-      title: "Top Score",
-      cardValue: b.highestScore ?? 0,
-      playerPosition: "Batsman",
-    }));
-
   // Win/loss colour from Club Cricket of Chicago's perspective (CCC's teamId differs
   // per series, so match by name). Non-CCC matches fall back to team-one.
   const cccWon = (m: (typeof matches)[number]) => {
@@ -204,13 +190,16 @@ async function buildDetail(series: { id: number; name: string; year: string }) {
     rank: fieldingRank.get(f.playerId) ?? null,
   }));
 
-  // rankingZone — total points across the three stat tables per player over the FULL
-  // division, ranked by total (league rank), then filtered to CCC players.
+  // Overall points per player across the three stat tables over the FULL division,
+  // ranked by total (= league rank), carrying photo/id so we can reuse it for both the
+  // ranking table and the "top performers" cards.
   const ptsMap = new Map<
     number,
     {
+      playerId: number;
       name: string;
       teamName: string | null;
+      pic: string | null;
       batting: number;
       bowling: number;
       fielding: number;
@@ -222,6 +211,7 @@ async function buildDetail(series: { id: number; name: string; year: string }) {
       firstName: string | null;
       lastName: string | null;
       teamName: string | null;
+      profilePic: string | null;
       points: number | null;
     },
     key: "batting" | "bowling" | "fielding"
@@ -229,34 +219,49 @@ async function buildDetail(series: { id: number; name: string; year: string }) {
     const e =
       ptsMap.get(r.playerId) ??
       {
+        playerId: r.playerId,
         name: fullName(r.firstName, r.lastName),
         teamName: r.teamName,
+        pic: r.profilePic,
         batting: 0,
         bowling: 0,
         fielding: 0,
       };
     if (!e.name) e.name = fullName(r.firstName, r.lastName);
     if (!e.teamName) e.teamName = r.teamName;
+    if (!e.pic) e.pic = r.profilePic;
     e[key] += r.points ?? 0;
     ptsMap.set(r.playerId, e);
   };
   allBatting.forEach((r) => bump(r, "batting"));
   allBowling.forEach((r) => bump(r, "bowling"));
   allFielding.forEach((r) => bump(r, "fielding"));
-  const rankingZone = [...ptsMap.values()]
+  const cccOverall = [...ptsMap.values()]
     .map((e) => ({ ...e, total: e.batting + e.bowling + e.fielding }))
     .sort((a, b) => b.total - a.total)
     .map((e, i) => ({ ...e, leagueRank: i + 1 }))
-    .filter((e) => isCCCName(e.teamName))
-    .map((e) => ({
-      player: e.name,
-      battingPoints: Math.round(e.batting),
-      bowlingPoints: Math.round(e.bowling),
-      fieldingPoints: Math.round(e.fielding),
-      otherPoints: 0,
-      total: Math.round(e.total),
-      rank: e.leagueRank,
-    }));
+    .filter((e) => isCCCName(e.teamName));
+
+  // topPlayers -> CCC's best OVERALL performers, ranked by total points
+  // (batting + bowling + fielding).
+  const topPlayers = cccOverall.slice(0, 4).map((e) => ({
+    id: e.playerId,
+    playerName: e.name || "Unknown Player",
+    image: [{ url: img(e.pic) }],
+    title: "Top Performer",
+    cardValue: Math.round(e.total),
+    playerPosition: "Overall Points",
+  }));
+
+  const rankingZone = cccOverall.map((e) => ({
+    player: e.name,
+    battingPoints: Math.round(e.batting),
+    bowlingPoints: Math.round(e.bowling),
+    fieldingPoints: Math.round(e.fielding),
+    otherPoints: 0,
+    total: Math.round(e.total),
+    rank: e.leagueRank,
+  }));
 
   return {
     id: String(seriesId),
