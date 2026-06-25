@@ -107,11 +107,13 @@ async function buildMatchCard(matchId: number) {
     prisma.match.findUnique({ where: { id: matchId } }),
   ]);
 
-  // Scorecards come from the DB (stored once a match finishes). If one isn't stored yet —
-  // e.g. an older match nobody has opened — fetch it once and store it, so later views are
-  // DB-only. Steady state: zero CricClubs calls per page view.
+  // Scorecards come from the DB (stored once a match finishes). If a *real* match (one we've
+  // synced) has no stored scorecard yet — e.g. an older match nobody has opened — fetch it
+  // once and store it. Gating on `dbMatch` is the security control: it stops unauthenticated
+  // callers from spraying random IDs to burn the shared CricClubs quota. Steady state: 0
+  // live calls per page view.
   let sc = (stored?.data as unknown as Row | null) ?? null;
-  if (!sc) {
+  if (!sc && dbMatch) {
     sc = (await getScoreCard(matchId).catch(() => null)) as unknown as Row | null;
     if (sc) {
       await prisma.matchScorecard

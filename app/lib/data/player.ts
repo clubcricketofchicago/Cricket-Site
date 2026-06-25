@@ -42,10 +42,12 @@ async function buildPlayerProfile(playerId: number) {
     }),
   ]);
 
-  // Career stats come from the DB (refreshed after matches). If not stored yet, fetch once
-  // and store it, so later views are DB-only. Steady state: zero CricClubs calls per view.
+  // Career stats come from the DB (refreshed after matches). If a *known* player (one in our
+  // DB) has none stored yet, fetch once and store it. Gating on `dbPlayer` is the security
+  // control: it stops unauthenticated callers from spraying random IDs to burn the shared
+  // CricClubs quota. Steady state: zero CricClubs calls per view.
   let career = (careerRow?.careerStats as unknown as CareerStats | null) ?? null;
-  if (!career) {
+  if (!career && dbPlayer) {
     career = await getCareerStats(playerId).catch(() => null);
     if (career) {
       await prisma.playerCareer

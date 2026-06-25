@@ -1,8 +1,8 @@
 // Server-side: Club Cricket of Chicago's squad from the DB, shaped like the CMS
 // `playerDetailedCard_Entry` array the players page expects. Tier (scorebycaptain) is
 // not used — every player is shown uniformly. Per-player matches/runs/wickets are
-// aggregated across CCC's tracked series; the "Show Full Stats" modal still pulls live
-// career stats from CricClubs via /api/player-stats.
+// aggregated across CCC's tracked series. (Full career stats live on the player profile
+// page, served from the DB — see app/lib/data/player.ts.)
 
 import { unstable_cache } from "next/cache";
 import { prisma } from "../db/prisma";
