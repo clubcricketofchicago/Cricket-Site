@@ -37,16 +37,39 @@ After step 2 the DB is **empty**, so pages render empty states until a sync runs
 curl -H "Authorization: Bearer $CRON_SECRET" https://<your-domain>/api/sync
 ```
 
-## 5. Keep data fresh (cron)
-[`vercel.json`](vercel.json) registers a **Vercel Cron** that calls `GET /api/sync` every
-6 hours (`0 */6 * * *`). Vercel automatically attaches `Authorization: Bearer $CRON_SECRET`
-to cron requests, so once `CRON_SECRET` is set (step 1) the endpoint is authenticated with
-no extra wiring. Adjust the schedule in `vercel.json` to taste.
+## 5. Keep data fresh (cron) — runs on the VPS, not Vercel
+The frontend is on Vercel, but the **sync runs from a system cron on the VPS**. That avoids
+Vercel's function time limit entirely (the full sync can take minutes) and needs no Pro plan.
 
-> **Needs the Vercel Pro plan.** The full sync runs longer than Hobby's 60s function limit
-> (`/api/sync` sets `maxDuration = 300`) and sub-daily crons are Pro-only. On Hobby the sync
-> would be cut off mid-run — instead run `npm run sync` from an external scheduler against
-> the same `DATABASE_URL` / `DIRECT_URL`.
+On the VPS, check out this repo *just for the sync* (the site itself stays on Vercel):
+
+```bash
+git clone <repo-url> /srv/cricket-site && cd /srv/cricket-site
+npm ci --include=dev          # tsx (used by `npm run sync`) is a devDependency
+cp .env.example .env          # then fill DATABASE_URL + the X_*/CRICCLUBS_* keys
+chmod +x scripts/sync-cron.sh
+```
+
+Add the crontab entry (edit the PATH line in `scripts/sync-cron.sh` first if node isn't on
+cron's default PATH — e.g. nvm installs):
+
+```cron
+# every 6 hours
+0 */6 * * * /srv/cricket-site/scripts/sync-cron.sh
+```
+
+Each run appends to `logs/sync.log`. **Verify** with one manual run:
+
+```bash
+./scripts/sync-cron.sh && tail -n 30 logs/sync.log
+```
+
+Expect `✓` lines with row counts and `Done in <ms> — N ok, 0 failed.`
+
+> **Alternative — Vercel Cron:** add a `vercel.json` with a `crons` entry hitting
+> `GET /api/sync` (the route already validates `Authorization: Bearer $CRON_SECRET`, which
+> Vercel attaches automatically). But it runs as a Vercel function, so it needs **Pro**
+> (Hobby caps functions at 60s and crons at once-daily).
 
 ## Notes
 - **Neon auto-suspends when idle**, so the first request after a quiet period is a slow
