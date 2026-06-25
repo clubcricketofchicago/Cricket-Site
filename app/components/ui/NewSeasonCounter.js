@@ -4,8 +4,12 @@ import CommonButton from './CommonButton'
 import TimeCounter from './TimeCounter'
 import { motion, useScroll, useTransform } from 'framer-motion'
 
-export default function NewSeasonCounter({ data }) {
+export default function NewSeasonCounter({ data, nextMatch }) {
   const { title, counterDate, CTA, convertedCTA, convertedHyperlink, CMTextArea } = data
+
+  // Prefer counting down to the next real fixture (from the DB) over the CMS counterDate.
+  const matchIso =
+    nextMatch?.date && new Date(nextMatch.date) >= new Date() ? nextMatch.date : null
 
   const { scrollY } = useScroll()
   const y = useTransform(scrollY, [0, 400], [0, -100])
@@ -29,7 +33,7 @@ export default function NewSeasonCounter({ data }) {
     backgroundImage = getFullImageUrl(data.bannerImage[0].url)
   }
 
-  const isFutureDate = new Date(counterDate) >= new Date()
+  const isFutureDate = matchIso ? true : new Date(counterDate) >= new Date()
 
   const displayTitle = isFutureDate
     ? title.split('\n').map((line, index) => (
@@ -57,7 +61,7 @@ export default function NewSeasonCounter({ data }) {
     >
       <motion.div className="content w-[90%] lg:w-[60%] mt-[10%]" style={{ y }}>
         <h4 className="title oswald-semi-bold h1">{displayTitle}</h4>
-        <TimeCounter matchDate={counterDate} matchTime="12:00 PM" className="my-[5.5%]" />
+        <TimeCounter matchDate={matchIso || counterDate} matchTime="12:00 PM" className="my-[5.5%]" />
         <CommonButton setRoutePath={displayHyperlink}>
           {displayCTA}
         </CommonButton>

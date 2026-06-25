@@ -85,8 +85,13 @@ const HomePageContent = () => {
           );
         case "tournamentSection":
           return <TournamentSection key={block.id} data={block} />;
-        case "timerBanner":
-          return <NewSeasonCounter key={block.id} data={block} />;
+        case "timerBanner": {
+          // Count down to the next actual fixture (from the DB), not a CMS-set date.
+          const nextMatch = (dbFixtures || []).find(
+            (f) => f?.date && new Date(f.date).getTime() >= Date.now() - 6 * 3600 * 1000
+          );
+          return <NewSeasonCounter key={block.id} data={block} nextMatch={nextMatch} />;
+        }
         case "meetTheManagement":
           return <MeetSquad key={block.id} data={block} />;
         case "banner":
