@@ -2,9 +2,10 @@
 // pulled live from CricClubs, plus this season's stats from the DB.
 
 import { unstable_cache } from "next/cache";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../db/prisma";
 import { TRACKED_SERIES } from "../cricclubs/config";
-import { getCareerStats, getUserDetails } from "../cricclubs/endpoints";
+import { getCareerStats } from "../cricclubs/endpoints";
 
 const IMG = "https://media.cricclubs.com";
 const img = (p?: unknown) =>
@@ -26,10 +27,13 @@ const ccStat = (v: unknown) => {
 const oversFromBalls = (b: number) => `${Math.floor(b / 6)}.${b % 6}`;
 const SEASON_IDS = TRACKED_SERIES.filter((s) => s.year === "2026").map((s) => s.id);
 
+type Row = Record<string, unknown>;
+type CareerStats = { battingStats?: Row[]; bowlingStats?: Row[] };
+
 async function buildPlayerProfile(playerId: number) {
-  const [bioRaw, career, batting, bowling] = await Promise.all([
-    getUserDetails(playerId).catch(() => null),
-    getCareerStats(playerId).catch(() => null),
+  const [careerRow, dbPlayer, batting, bowling] = await Promise.all([
+    prisma.playerCareer.findUnique({ where: { playerId } }),
+    prisma.player.findUnique({ where: { id: playerId } }),
     prisma.playerBattingStat.findMany({
       where: { playerId, seriesId: { in: SEASON_IDS } },
     }),
@@ -37,6 +41,22 @@ async function buildPlayerProfile(playerId: number) {
       where: { playerId, seriesId: { in: SEASON_IDS } },
     }),
   ]);
+
+  // Career stats come from the DB (refreshed after matches). If not stored yet, fetch once
+  // and store it, so later views are DB-only. Steady state: zero CricClubs calls per view.
+  let career = (careerRow?.careerStats as unknown as CareerStats | null) ?? null;
+  if (!career) {
+    career = await getCareerStats(playerId).catch(() => null);
+    if (career) {
+      await prisma.playerCareer
+        .upsert({
+          where: { playerId },
+          create: { playerId, careerStats: career as unknown as Prisma.InputJsonValue },
+          update: { careerStats: career as unknown as Prisma.InputJsonValue },
+        })
+        .catch(() => {});
+    }
+  }
 
   // Season totals (count matches once per division)
   const matchesBySeries = new Map<number, number>();
@@ -53,25 +73,18 @@ async function buildPlayerProfile(playerId: number) {
     wickets: bowling.reduce((s, b) => s + b.wickets, 0),
   };
 
-  const bio = bioRaw
+  // Bio is read from the Player row (the sync populates it from getUserDetails once).
+  const bio = dbPlayer
     ? {
-        firstName: str(bioRaw.firstName),
-        lastName: str(bioRaw.lastName),
-        playingRole: str(bioRaw.playingRole),
-        battingStyle: str(bioRaw.battingStyle),
-        bowlingStyle: str(bioRaw.bowlingStyle),
-        age: typeof bioRaw.age === "number" ? bioRaw.age : null,
-        photo:
-          img(bioRaw.profileImagePath) ||
-          img((bioRaw as Record<string, unknown>).profilepic_file_path),
+        firstName: str(dbPlayer.firstName),
+        lastName: str(dbPlayer.lastName),
+        playingRole: str(dbPlayer.playingRole),
+        battingStyle: str(dbPlayer.battingStyle),
+        bowlingStyle: str(dbPlayer.bowlingStyle),
+        age: dbPlayer.age ?? null,
+        photo: img(dbPlayer.profilePic),
       }
     : null;
-
-  // Fallback name/photo from the DB roster if bio is unavailable
-  const dbPlayer =
-    !bio || (!bio.firstName && !bio.lastName)
-      ? await prisma.player.findUnique({ where: { id: playerId } })
-      : null;
 
   const careerBatting = (
     Array.isArray(career?.battingStats) ? career!.battingStats : []

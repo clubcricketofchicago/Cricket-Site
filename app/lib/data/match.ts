@@ -2,6 +2,7 @@
 // from CricClubs and pairs it with the DB match row (teams, result, date, series).
 
 import { unstable_cache } from "next/cache";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../db/prisma";
 import { getScoreCard } from "../cricclubs/endpoints";
 
@@ -101,10 +102,27 @@ function shapeInnings(inn: Row | undefined) {
 }
 
 async function buildMatchCard(matchId: number) {
-  const [sc, dbMatch] = await Promise.all([
-    getScoreCard(matchId).catch(() => null),
+  const [stored, dbMatch] = await Promise.all([
+    prisma.matchScorecard.findUnique({ where: { matchId } }),
     prisma.match.findUnique({ where: { id: matchId } }),
   ]);
+
+  // Scorecards come from the DB (stored once a match finishes). If one isn't stored yet —
+  // e.g. an older match nobody has opened — fetch it once and store it, so later views are
+  // DB-only. Steady state: zero CricClubs calls per page view.
+  let sc = (stored?.data as unknown as Row | null) ?? null;
+  if (!sc) {
+    sc = (await getScoreCard(matchId).catch(() => null)) as unknown as Row | null;
+    if (sc) {
+      await prisma.matchScorecard
+        .upsert({
+          where: { matchId },
+          create: { matchId, data: sc as unknown as Prisma.InputJsonValue },
+          update: { data: sc as unknown as Prisma.InputJsonValue },
+        })
+        .catch(() => {});
+    }
+  }
 
   const innings = [sc?.innings1, sc?.innings2, sc?.innings3, sc?.innings4]
     .map((i) => shapeInnings(i as Row | undefined))

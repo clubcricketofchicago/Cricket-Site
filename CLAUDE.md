@@ -31,7 +31,8 @@ an admin or live-scoring tool. Package name is `ccc`; repo
    - Powers: home season hub, schedule/calendar, players roster, tournaments
      (list/year/detail), match scorecards, player profiles, recent results.
    - Prisma schema (`prisma/schema.prisma`): `Series, Team, Player, TeamRoster, Fixture,
-     Match, Standing, PlayerBattingStat/BowlingStat/FieldingStat, SyncState`. Keyed by
+     Match, Standing, PlayerBattingStat/BowlingStat/FieldingStat, SyncState, MatchScorecard,
+     PlayerCareer`. Keyed by
      CricClubs natural IDs so every sync is idempotent. **No enforced FKs** (read-mostly
      mirror). **No migration files** — schema applied via `prisma db push`.
 
@@ -41,9 +42,14 @@ an admin or live-scoring tool. Package name is `ccc`; repo
      query builders in `app/lib/queries/*` (no Apollo/urql).
    - Image base URL from `process.env.NEXT_PUBLIC_CMS_URL`.
 
-3. **CricClubs live — one proxy route.** `app/api/player-stats/route.ts` proxies live
-   career stats (`/player/getStats`), forwarding `X_API_KEY`/`X_CONSUMER_KEY`,
-   `cache:"no-store"`. Used by the player **profile** page.
+3. **Scorecards + player career stats — also mirrored into the DB.** Finished-match
+   scorecards (`MatchScorecard`) and CCC player career stats (`PlayerCareer`) are synced
+   from CricClubs **after a match finishes** (`syncScorecards` / `syncPlayerCareers`,
+   schedule-aware — careers fire only when a new scorecard appears and ~once/day). So
+   `/match/[id]` and `/players/[id]` read from Neon; a missing row is fetched live **once
+   and stored**, then served from the DB. Steady state: **zero** live CricClubs calls per
+   page view. Player bios populate the existing `Player.battingStyle/bowlingStyle/age`
+   columns. (The legacy `app/api/player-stats/route.ts` proxy is now unused.)
 
 ### Rendering pattern
 Pages are still **Client Components** (`'use client'`, `dynamic = 'force-dynamic'`) that

@@ -255,3 +255,25 @@ model SyncState {
 
   @@map("sync_state")
 }
+
+/// Full scorecard (innings/batting/bowling cards) for a finished match, fetched once from
+/// /scoreCard/getScoreCard and stored verbatim. Finished scorecards never change, so the
+/// Match Centre reads from here instead of calling CricClubs per page view.
+model MatchScorecard {
+  matchId  Int      @id @map("match_id") // CricClubs matchId
+  data     Json // raw getScoreCard payload (innings1..4)
+  syncedAt DateTime @default(now()) @updatedAt @map("synced_at")
+
+  @@map("match_scorecards")
+}
+
+/// A CCC player's career stats from /player/getStats. Refreshed after a match the player
+/// featured in, so the profile page reads from here instead of calling CricClubs per view.
+/// (Bio fields live on the Player row.)
+model PlayerCareer {
+  playerId    Int      @id @map("player_id") // CricClubs playerID
+  careerStats Json     @map("career_stats") // raw getCareerStats payload
+  syncedAt    DateTime @default(now()) @updatedAt @map("synced_at")
+
+  @@map("player_careers")
+}

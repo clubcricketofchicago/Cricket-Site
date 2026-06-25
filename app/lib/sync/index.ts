@@ -2,18 +2,22 @@
 // Prisma upserts keyed by the source's natural IDs. `syncAll` orchestrates them and
 // records per-entity status in `sync_state` (one failing step never aborts the rest).
 
+import { Prisma } from "@prisma/client";
 import { prisma } from "../db/prisma";
 import { CCC_TEAM_IDS, TRACKED_SERIES, ACTIVE_SEASON_YEAR } from "../cricclubs/config";
 import {
   getBattingStats,
   getBowlingStats,
+  getCareerStats,
   getFieldingStats,
   getMatches,
   getPointsTable,
+  getScoreCard,
   getSchedule,
   getSeriesList,
   getTeamPlayers,
   getTeamsList,
+  getUserDetails,
 } from "../cricclubs/endpoints";
 
 // ---- coercion helpers (API mixes number | string) -------------------------
@@ -26,6 +30,9 @@ function numOrNull(v: unknown): number | null {
   if (v === undefined || v === null || v === "") return null;
   const n = typeof v === "string" ? parseFloat(v) : (v as number);
   return Number.isFinite(n) ? n : null;
+}
+function str(v: unknown): string | null {
+  return typeof v === "string" && v ? v : null;
 }
 function dateFromUnix(v: unknown): Date | null {
   const n = numOrNull(v);
@@ -355,6 +362,85 @@ export async function syncRosters(): Promise<{ players: number; roster: number }
   return { players, roster };
 }
 
+/** Store full scorecards for completed matches in `seriesIds` that aren't stored yet
+ *  (capped per run). A finished scorecard is immutable, so each is fetched once. Returns
+ *  the number newly fetched (>0 signals a match just finished). */
+export async function syncScorecards(seriesIds: number[], cap = 20): Promise<number> {
+  const completed = await prisma.match.findMany({
+    where: { seriesId: { in: seriesIds }, isComplete: true },
+    select: { id: true },
+  });
+  const stored = await prisma.matchScorecard.findMany({
+    where: { matchId: { in: completed.map((m) => m.id) } },
+    select: { matchId: true },
+  });
+  const have = new Set(stored.map((s) => s.matchId));
+  const missing = completed
+    .map((m) => m.id)
+    .filter((id) => !have.has(id))
+    .slice(0, cap);
+  let count = 0;
+  for (const matchId of missing) {
+    const data = await getScoreCard(matchId).catch(() => null);
+    if (!data) continue;
+    await prisma.matchScorecard.upsert({
+      where: { matchId },
+      create: { matchId, data: data as Prisma.InputJsonValue },
+      update: { data: data as Prisma.InputJsonValue },
+    });
+    count++;
+  }
+  return count;
+}
+
+/** Refresh CCC players' career stats (PlayerCareer) and one-time bios (Player.*Style/age).
+ *  Career stats change only when a player features in a match, so call this post-match. */
+export async function syncPlayerCareers(bioCap = 10): Promise<number> {
+  const roster = await prisma.teamRoster.findMany({
+    where: { teamId: { in: CCC_TEAM_IDS } },
+    select: { playerId: true },
+  });
+  const playerIds = [...new Set(roster.map((r) => r.playerId))];
+  // Bios are static — fetch only for players that don't have one yet (capped, to spread
+  // the one-time backfill across runs).
+  const players = await prisma.player.findMany({
+    where: { id: { in: playerIds } },
+    select: { id: true, battingStyle: true },
+  });
+  const needBio = new Set(
+    players.filter((p) => !p.battingStyle).map((p) => p.id).slice(0, bioCap)
+  );
+  let count = 0;
+  for (const playerId of playerIds) {
+    const [career, bio] = await Promise.all([
+      getCareerStats(playerId).catch(() => null),
+      needBio.has(playerId) ? getUserDetails(playerId).catch(() => null) : null,
+    ]);
+    if (career) {
+      await prisma.playerCareer.upsert({
+        where: { playerId },
+        create: { playerId, careerStats: career as Prisma.InputJsonValue },
+        update: { careerStats: career as Prisma.InputJsonValue },
+      });
+      count++;
+    }
+    if (bio) {
+      await prisma.player
+        .update({
+          where: { id: playerId },
+          data: {
+            battingStyle: str(bio.battingStyle),
+            bowlingStyle: str(bio.bowlingStyle),
+            dateOfBirth: str(bio.dateOfBirth),
+            age: numOrNull(bio.age),
+          },
+        })
+        .catch(() => {});
+    }
+  }
+  return count;
+}
+
 // ---- orchestration ---------------------------------------------------------
 
 type StepResult =
@@ -447,6 +533,24 @@ export async function syncAll(): Promise<{
   }
 
   steps.rosters = await runStep("rosters", syncRosters);
+
+  // Scorecards for finished matches in the synced series (capped/run; immutable once
+  // stored). A new scorecard means a match just finished -> refresh CCC career stats,
+  // throttled to ~once/day.
+  const syncedSeriesIds = seriesToSync.map((s) => s.id);
+  const scStep = await runStep("scorecards", () => syncScorecards(syncedSeriesIds, 20));
+  steps.scorecards = scStep;
+  const newScorecards =
+    scStep.status === "ok" && typeof scStep.result === "number" ? scStep.result : 0;
+  if (newScorecards > 0) {
+    const careersState = await prisma.syncState.findUnique({ where: { entity: "careers" } });
+    const careersStale =
+      !careersState?.lastSyncedAt ||
+      Date.now() - careersState.lastSyncedAt.getTime() > 20 * 3600 * 1000;
+    if (careersStale) {
+      steps.careers = await runStep("careers", syncPlayerCareers);
+    }
+  }
 
   return { durationMs: Date.now() - started, steps };
 }
