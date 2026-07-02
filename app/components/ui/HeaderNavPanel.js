@@ -6,6 +6,7 @@ import { useRef, useEffect, useState } from 'react'
 
 import { fetchGraphQL } from '../../lib/graphqlClient'
 import { getNavigationConfig } from '../../lib/queries/navigationQuery'
+import { localizeUrl } from '../../lib/localizeUrl'
 import Image from 'next/image'
 import ThemeToggle from './ThemeToggle'
 
@@ -34,12 +35,15 @@ function NavEleIco({ iconData }) {
 function NavEle({ navItem, setNewTab }) {
   const hasIcon = navItem.navigationIcon && navItem.navigationIcon.length > 0
   const imageEle = hasIcon ? <NavEleIco iconData={navItem.navigationIcon[0]} /> : <></>
-  const target = setNewTab || navItem.hyperlink.url.startsWith('http') ? '_blank' : undefined
+  // Own-domain absolute URLs from the CMS become relative, so only genuinely
+  // external links (YouTube, webmail…) open a new tab.
+  const url = localizeUrl(navItem.hyperlink.url)
+  const target = setNewTab || url.startsWith('http') ? '_blank' : undefined
 
   return (
     <div className="nav_ele flex_grid">
       <div className="nav_ele_text">
-        <Link href={navItem.hyperlink.url} target={target} className="no_underline p2">
+        <Link href={url} target={target} className="no_underline p2">
           {navItem.title}
         </Link>
       </div>
@@ -51,7 +55,7 @@ function NavEle({ navItem, setNewTab }) {
 function NavEleBtn({ navItem }) {
   return (
     <div className="nav_ele">
-      <Link href={navItem.hyperlink.url}>
+      <Link href={localizeUrl(navItem.hyperlink.url)}>
         <button className="nav_ele_btn">
           <p className="roboto-condensed-med p2">{navItem.title}</p>
         </button>
@@ -162,9 +166,10 @@ export default function HeaderNavPanel() {
   }, [])
 
   const getFullUrl = (url) => {
-    if (url?.startsWith('http')) return url
-    if (url?.startsWith('/')) return url
-    return `/${url}`
+    const local = localizeUrl(url)
+    if (local?.startsWith('http')) return local
+    if (local?.startsWith('/')) return local
+    return `/${local}`
   }
 
   const buttonItem = navigationItems.find((item) => item.buttonToggle)
@@ -200,7 +205,7 @@ export default function HeaderNavPanel() {
                   <div key={item.id} className="mob_nav_ele">
                     <Link
                       href={getFullUrl(item.hyperlink.url)}
-                      target={item.hyperlink.url.startsWith('http') ? '_blank' : undefined}
+                      target={getFullUrl(item.hyperlink.url).startsWith('http') ? '_blank' : undefined}
                       className="roboto-condensed-regular no_underline p2 white_color"
                     >
                       {item.title}
