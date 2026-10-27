@@ -26,10 +26,9 @@ an admin or live-scoring tool. Package name is `ccc`; repo
      `deleteMany+createMany` snapshot-replaces in **Neon Postgres**. Trigger via
      `GET /api/sync` (cron, `CRON_SECRET`) or `npm run sync` (CLI, `scripts/sync.ts`).
    - **Server-side readers** in `app/lib/data/*` shape DB rows into the exact payloads
-     the components already expect, cached with `unstable_cache`: 12 hours for
-     current/mixed data (`"cricclubs"`), 30 days for historical tournament readers
-     (`"cricclubs-history"`). Successful syncs expire current data through the
-     authenticated `POST /api/cache-refresh` hook; see `docs/CACHE_POLICY.md`.
+     the components already expect. They use `unstable_cache`, with successful syncs
+     expiring current data through the authenticated `POST /api/cache-refresh` hook.
+     `docs/CACHE_POLICY.md` owns the cache lifetimes and invalidation rules.
    - Powers: home season hub, schedule/calendar, players roster, tournaments
      (list/year/detail), match scorecards, player profiles, recent results.
    - Prisma schema (`prisma/schema.prisma`): `Series, Team, Player, TeamRoster, Fixture,
@@ -73,7 +72,7 @@ server-side. Editorial still comes straight from the CMS client-side.
   onto the legacy var names so old classes re-skin.
 - **framer-motion**, **swiper**, **react-tabs**, **date-fns**, **swup** +
   `next-page-transitions`, **emailjs-com** (join-us).
-- ESLint 9 flat config (`eslint.config.mjs`). **No test framework.**
+- ESLint 9 flat config (`eslint.config.mjs`). Cache tests use Node's test runner via `tsx`.
 - **shadcn/ui** scaffolded but `src/` is unused (see below).
 
 ## Layout — `app/` is live, `src/` is dead
@@ -90,7 +89,7 @@ app/
   lib/
     cricclubs/          ← typed CricClubs API client (client/endpoints/config/types)
     sync/               ← CricClubs → Postgres sync orchestrator
-    data/               ← server-side DB readers (cached, "cricclubs" tag) + ccc.ts identity helpers
+    data/               ← cached server-side DB readers + ccc.ts identity helpers
     db/prisma.ts        ← Prisma client singleton
     graphqlClient.js + queries/   ← Craft CMS (editorial)
   data/{data.json,grounds.json}   ← static fallbacks
@@ -143,11 +142,8 @@ internals in **`docs/DATA_LAYER.md`**.
 - **Neon auto-suspends when idle** → the first request after a quiet period is a slow cold
   start (not a bug). Pages whose `/api/*` calls fail render empty/loading states.
 - **`unstable_cache` invalidation:** the Actions workflow calls `/api/cache-refresh`
-  after a successful sync; `/api/sync` also invalidates after full success.
-  `revalidateTag(tag, { expire: 0 })` expires data immediately for the next reader.
-  Routine refreshes preserve the historical tag; use `?scope=all` after a full
-  CLI backfill. Keep competitive HTTP cache freshness at zero so an independent
-  response cache cannot hide refreshed Data Cache entries.
+  after a successful sync; `/api/sync` also invalidates after full success. Follow
+  **`docs/CACHE_POLICY.md`** for tag scopes, lifetimes, and HTTP cache constraints.
 - **`next.config.ts` is the single config** (the old `next.config.js` was removed). Image
   `remotePatterns`: `media.cricclubs.com`, `cricclubs.com`, the CMS host; most images use
   `unoptimized`.

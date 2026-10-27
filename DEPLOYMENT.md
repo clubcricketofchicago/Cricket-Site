@@ -72,14 +72,9 @@ update that URL in the workflow before configuring its secret. Do not point it a
 a preview or a redirecting hostname. No hosting/account settings are changed by
 the code itself.
 
-Current/mixed competitive data has a **12-hour recovery TTL**, allowing delay around
-the eight-hour sync schedule. Historical tournament seasons/fixtures use a separate
-**30-day** cache that routine refreshes leave intact. API, calendar and generated
-OpenGraph responses use `max-age=0, s-maxage=0, must-revalidate` with no HTTP SWR
-window: the shared Next Data Cache owns reuse, so an independent CDN copy cannot
-hide a successful refresh. This may increase function invocations, but cached
-requests do not query Neon. See [the cache policy](docs/CACHE_POLICY.md) for details,
-full-backfill refresh, and validation commands.
+The authoritative [cache policy](docs/CACHE_POLICY.md) documents reader lifetimes,
+historical-data handling, HTTP response freshness, full-backfill refresh, and
+validation commands.
 
 ### Alternative: VPS cron
 

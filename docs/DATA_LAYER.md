@@ -1,4 +1,4 @@
-# CricClubs data layer (Phase 0/1)
+# CricClubs data layer
 
 A local Postgres mirror of the CricClubs data Club Cricket of Chicago needs, synced on
 a schedule. The website reads from this DB instead of re-entering data in the CMS.
@@ -73,10 +73,8 @@ The sync records per-entity status in `sync_state`; one failing step never abort
 the rest, but any failed step prevents the post-sync refresh. HTTP `/api/sync`
 invalidates caches itself after full success.
 
-Reader caches last 12 hours for current/mixed data, with separate 30-day caches for
-historical tournament seasons and fixtures. A full historical CLI backfill needs
-an authenticated `POST /api/cache-refresh?scope=all`; routine sync preserves that
-history. See [CACHE_POLICY.md](CACHE_POLICY.md) for freshness, HTTP headers and tests.
+The authoritative [cache policy](CACHE_POLICY.md) documents reader lifetimes,
+invalidation scopes, HTTP response freshness, and cache tests.
 
 ## Field coverage
 
@@ -85,9 +83,7 @@ Every competitive field the site shows resolves from CricClubs — standings
 fixtures, results, rosters. See REBUILD_PLAN §12 for the field-by-field map. Editorial
 content (hero, sponsors, management, academy, player gold/silver/bronze tier) stays in the CMS.
 
-## Not in this phase
+## Current exclusions
 
-- Wiring the pages to read from the DB (Phase 4) — the existing CMS-driven pages are untouched.
-- Player career stats caching (`/player/getStats` still served live by `/api/player-stats`).
 - The 3 auth-gated endpoints (series details/numbers/rankings) — not required; rankings are
   derivable by joining the `points` field across the three stat tables.

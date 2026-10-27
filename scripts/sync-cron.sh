@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # CricClubs -> Neon sync, for a system cron on the VPS.
 #
-#   crontab -e:   0 */6 * * *  /srv/cricket-site/scripts/sync-cron.sh
+#   crontab -e:   0 */8 * * *  /srv/cricket-site/scripts/sync-cron.sh
 #
 # Runs the sync standalone via `npm run sync` (scripts/sync.ts) — no web server and no
 # Vercel involved, so there is NO function time limit. One run at a time (flock), with
