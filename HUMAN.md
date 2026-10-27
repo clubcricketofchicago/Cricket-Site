@@ -71,9 +71,8 @@ running production site:
 - **The site is fully deployed** on the club's own accounts with the real domain.
 - A handful of earlier rough edges were cleaned up (the broken footer link, duplicate
   config files, a stale lint setup, dead "show full stats" pop-up).
-- **Still on the tidy-up list:** the contact-form email keys are written into the code,
-  and the data sync needs a scheduled job set up to keep refreshing automatically (the
-  data is correct now; this just keeps it current over the season).
+- **Still on the tidy-up list:** the contact-form email keys are written into the code.
+  The CricClubs data sync is automated through the repository's scheduled workflow.
 
 ## Tech, briefly
 

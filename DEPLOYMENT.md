@@ -8,8 +8,8 @@ plus **Craft CMS** for editorial content.
 > `clubcricketofchicago/Cricket-Site` → pushes to `main` auto-deploy. The domain
 > `clubcricketofchicago.com` (apex + `www`) is attached to this project; DNS is at
 > **Hostinger**. Env vars are set in **Vercel → Settings → Environment Variables
-> (Production)**. The data **sync is not yet scheduled** — set up a GitHub Action or the
-> VPS cron (`scripts/sync-cron.sh`) to keep it fresh (see §5).
+> (Production)**. The data sync runs through `.github/workflows/sync.yml` every eight
+> hours. Its post-sync cache refresh requires the configuration in §5.
 
 The rest of this doc is the generic runbook (for re-deploying or moving hosts). The steps
 below configure a hosting environment from scratch.
@@ -24,6 +24,7 @@ On Vercel: **Project Settings → Environment Variables** (Production scope).
 | `DIRECT_URL` | Neon **direct** endpoint — schema push / sync |
 | `X_API_KEY`, `X_CONSUMER_KEY` | CricClubs core API keys |
 | `CRON_SECRET` | shared secret guarding `GET /api/sync` |
+| `CACHE_REFRESH_SECRET` | shared secret guarding `POST /api/cache-refresh`; set the same value in Vercel Production and GitHub Actions repository secrets |
 | `NEXT_PUBLIC_CMS_URL` | Craft CMS base URL (`https://cms.ccc.clubcricketofchicago.com/`) |
 
 ## 2. Database schema
@@ -47,9 +48,38 @@ After step 2 the DB is **empty**, so pages render empty states until a sync runs
 curl -H "Authorization: Bearer $CRON_SECRET" https://<your-domain>/api/sync
 ```
 
-## 5. Keep data fresh (cron) — runs on the VPS, not Vercel
-The frontend is on Vercel, but the **sync runs from a system cron on the VPS**. That avoids
-Vercel's function time limit entirely (the full sync can take minutes) and needs no Pro plan.
+## 5. Keep data fresh — GitHub Actions and cache refresh
+
+`.github/workflows/sync.yml` runs `npm run sync` every eight hours. Only after that
+command succeeds does it POST to
+`https://www.clubcricketofchicago.com/api/cache-refresh`. This small endpoint expires
+the website's competitive-data cache; it does **not** run another sync or query Neon.
+The next request for an expired entry reads the updated DB and caches it again.
+
+Before enabling this hook in production:
+
+1. Configure a strong `CACHE_REFRESH_SECRET` in **Vercel → Environment Variables →
+   Production** and the same value in **GitHub → Settings → Secrets and variables →
+   Actions → Repository secrets**. Do not commit, print, or place the value in a URL.
+2. Deploy the code with that environment variable. Nothing in the running website
+   changes until this code is deployed; adding the secret alone does not deploy it.
+3. After deployment, let a successful sync run the refresh step. A missing secret,
+   unavailable endpoint, or HTTP error fails that step visibly; it does not silently
+   pretend the cache is fresh. The bounded retries only retry cache invalidation.
+
+The hook targets the canonical production domain above. If the deployment moves,
+update that URL in the workflow before configuring its secret. Do not point it at
+a preview or a redirecting hostname. No hosting/account settings are changed by
+the code itself.
+
+The authoritative [cache policy](docs/CACHE_POLICY.md) documents reader lifetimes,
+historical-data handling, HTTP response freshness, full-backfill refresh, and
+validation commands.
+
+### Alternative: VPS cron
+
+Use this instead of the GitHub schedule, not in addition to it. The frontend can
+stay on Vercel while the VPS runs the sync without a Vercel function time limit.
 
 On the VPS, check out this repo *just for the sync* (the site itself stays on Vercel):
 
@@ -64,8 +94,8 @@ Add the crontab entry (edit the PATH line in `scripts/sync-cron.sh` first if nod
 cron's default PATH — e.g. nvm installs):
 
 ```cron
-# every 6 hours
-0 */6 * * * /srv/cricket-site/scripts/sync-cron.sh
+# every 8 hours (also arrange the authenticated cache refresh after success)
+0 */8 * * * /srv/cricket-site/scripts/sync-cron.sh
 ```
 
 Each run appends to `logs/sync.log`. **Verify** with one manual run:
@@ -75,6 +105,9 @@ Each run appends to `logs/sync.log`. **Verify** with one manual run:
 ```
 
 Expect `✓` lines with row counts and `Done in <ms> — N ok, 0 failed.`
+The VPS wrapper and standalone CLI do not automatically refresh a remote website's
+cache. After a successful run, call `POST /api/cache-refresh` with
+`Authorization: Bearer $CACHE_REFRESH_SECRET`, as described in the cache-policy doc.
 
 > **Alternative — Vercel Cron:** add a `vercel.json` with a `crons` entry hitting
 > `GET /api/sync` (the route already validates `Authorization: Bearer $CRON_SECRET`, which
@@ -124,12 +157,12 @@ Within the DNS TTL the public domain serves from the VPS. The domain itself neve
 **Future deploys:** `cd /srv/cricket-site && ./deploy/deploy.sh` (pull → build → restart).
 Wire it to a GitHub Action / webhook for push-to-deploy if you want.
 
-The sync cron (section 5) already runs on this same box, so the whole stack — frontend,
-sync, CMS — lives on one server you control.
+With the alternative VPS sync cron from section 5, the whole stack — frontend,
+sync, CMS — can live on one server you control. Point the refresh hook at that site.
 
 ## Notes
-- **Neon auto-suspends when idle**, so the first request after a quiet period is a slow
-  cold start (not a bug). A keep-warm ping or an always-on Neon plan avoids it.
+- **Neon auto-suspends when idle**. The first uncached DB read after a quiet period can
+  have a cold-start delay; avoid keep-warm queries when conserving compute hours.
 - `GET /api/sync` can run long (`maxDuration = 300`); ensure the host allows it
   (e.g. Vercel Pro for >10s functions).
 - Editorial content (home blocks, sponsors, nav) still comes from the **Craft CMS**

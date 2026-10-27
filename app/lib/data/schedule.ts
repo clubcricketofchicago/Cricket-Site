@@ -2,6 +2,7 @@
 // CMS `fixtureCard_Entry` array the schedule page (UpcomingMatchPanel + DateCalendar) expects.
 
 import { unstable_cache } from "next/cache";
+import { COMPETITIVE_CACHE } from "./cachePolicy";
 import { prisma } from "../db/prisma";
 import { CCC_TEAM_IDS } from "../cricclubs/config";
 
@@ -55,5 +56,5 @@ async function buildCalendarEntries(): Promise<{ entries: Entry[] }> {
 export const getCalendarEntries = unstable_cache(
   buildCalendarEntries,
   ["calendar-entries"],
-  { revalidate: 120, tags: ["cricclubs"] }
+  COMPETITIVE_CACHE
 );

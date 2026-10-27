@@ -1,3 +1,4 @@
+import { COMPETITIVE_RESPONSE_HEADERS } from "../../../lib/data/cachePolicy";
 import { NextRequest, NextResponse } from "next/server";
 import { getFixtureEntries } from "../../../lib/data/tournaments";
 
@@ -9,7 +10,7 @@ export async function GET(request: NextRequest) {
   try {
     const data = await getFixtureEntries(slug);
     return NextResponse.json(data, {
-      headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600" },
+      headers: { ...COMPETITIVE_RESPONSE_HEADERS },
     });
   } catch (err) {
     return NextResponse.json(

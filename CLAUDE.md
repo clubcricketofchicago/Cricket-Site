@@ -26,8 +26,9 @@ an admin or live-scoring tool. Package name is `ccc`; repo
      `deleteMany+createMany` snapshot-replaces in **Neon Postgres**. Trigger via
      `GET /api/sync` (cron, `CRON_SECRET`) or `npm run sync` (CLI, `scripts/sync.ts`).
    - **Server-side readers** in `app/lib/data/*` shape DB rows into the exact payloads
-     the components already expect, cached with `unstable_cache` (tag `"cricclubs"`,
-     busted on sync via `revalidateTag("cricclubs", "max")`).
+     the components already expect. They use `unstable_cache`, with successful syncs
+     expiring current data through the authenticated `POST /api/cache-refresh` hook.
+     `docs/CACHE_POLICY.md` owns the cache lifetimes and invalidation rules.
    - Powers: home season hub, schedule/calendar, players roster, tournaments
      (list/year/detail), match scorecards, player profiles, recent results.
    - Prisma schema (`prisma/schema.prisma`): `Series, Team, Player, TeamRoster, Fixture,
@@ -71,7 +72,7 @@ server-side. Editorial still comes straight from the CMS client-side.
   onto the legacy var names so old classes re-skin.
 - **framer-motion**, **swiper**, **react-tabs**, **date-fns**, **swup** +
   `next-page-transitions`, **emailjs-com** (join-us).
-- ESLint 9 flat config (`eslint.config.mjs`). **No test framework.**
+- ESLint 9 flat config (`eslint.config.mjs`). Cache tests use Node's test runner via `tsx`.
 - **shadcn/ui** scaffolded but `src/` is unused (see below).
 
 ## Layout — `app/` is live, `src/` is dead
@@ -88,7 +89,7 @@ app/
   lib/
     cricclubs/          ← typed CricClubs API client (client/endpoints/config/types)
     sync/               ← CricClubs → Postgres sync orchestrator
-    data/               ← server-side DB readers (cached, "cricclubs" tag) + ccc.ts identity helpers
+    data/               ← cached server-side DB readers + ccc.ts identity helpers
     db/prisma.ts        ← Prisma client singleton
     graphqlClient.js + queries/   ← Craft CMS (editorial)
   data/{data.json,grounds.json}   ← static fallbacks
@@ -108,19 +109,22 @@ API (all `runtime = "nodejs"`): `/api/players`, `/api/schedule`, `/api/recent-re
 `/api/home`, `/api/tournaments` (`?view=list` = cheap config-only list; `?year=YYYY` =
 one season's full details), `/api/tournaments/fixtures`, `/api/match/[matchId]`,
 `/api/player/[playerId]`, `/api/player-stats` (live CricClubs proxy), `/api/sync`
-(`Authorization: Bearer $CRON_SECRET`, runs the full sync).
+(`Authorization: Bearer $CRON_SECRET`, runs the full sync), `/api/cache-refresh`
+(POST, `Authorization: Bearer $CACHE_REFRESH_SECRET`, cache invalidation only).
 
 ## Environment variables (see `.env.example`, committed; `.env` is gitignored)
 
 `DATABASE_URL` (Neon pooled), `DIRECT_URL` (Neon direct — migrations/sync), `X_API_KEY` +
-`X_CONSUMER_KEY` (CricClubs), `CRON_SECRET` (guards `/api/sync`), `NEXT_PUBLIC_CMS_URL`
+`X_CONSUMER_KEY` (CricClubs), `CRON_SECRET` (guards `/api/sync`),
+`CACHE_REFRESH_SECRET` (same value in Vercel Production and GitHub Actions for the
+post-sync refresh hook), `NEXT_PUBLIC_CMS_URL`
 (Craft CMS). Optional `CRICCLUBS_*` have defaults in `config.ts`.
 
 ## Commands
 
 `npm run dev` / `build` / `start`; `npm run lint` → **`eslint app`** (NOT `next lint` —
 removed in Next 16); `npm run sync` (CricClubs→DB); `npm run db:push` / `db:studio` /
-`db:generate`; `npm run cricclubs:smoke`.
+`db:generate`; `npm run cricclubs:smoke`; `npm run test:cache` (no DB required).
 
 ## Deployment
 
@@ -137,9 +141,9 @@ internals in **`docs/DATA_LAYER.md`**.
 - **`src/` is dead code** — put components in `app/components/`; the `@/*` alias is unused.
 - **Neon auto-suspends when idle** → the first request after a quiet period is a slow cold
   start (not a bug). Pages whose `/api/*` calls fail render empty/loading states.
-- **`unstable_cache` busting:** in dev it needs a **dev-server restart** (clearing
-  `.next/cache` alone is insufficient); in prod, `/api/sync` calls
-  `revalidateTag("cricclubs", "max")` (Next 16 requires the 2nd arg).
+- **`unstable_cache` invalidation:** the Actions workflow calls `/api/cache-refresh`
+  after a successful sync; `/api/sync` also invalidates after full success. Follow
+  **`docs/CACHE_POLICY.md`** for tag scopes, lifetimes, and HTTP cache constraints.
 - **`next.config.ts` is the single config** (the old `next.config.js` was removed). Image
   `remotePatterns`: `media.cricclubs.com`, `cricclubs.com`, the CMS host; most images use
   `unoptimized`.

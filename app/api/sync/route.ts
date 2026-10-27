@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
 import { syncAll } from "../../lib/sync";
+import { refreshCompetitiveCache } from "../../lib/data/refreshCache";
 
 // Prisma needs the Node.js runtime; the sync can run long.
 export const runtime = "nodejs";
@@ -21,14 +21,12 @@ export async function GET(request: NextRequest) {
 
   try {
     const summary = await syncAll();
-    // Bust the DB-backed caches (home/tournaments/match/player are unstable_cache'd with
-    // the "cricclubs" tag) so freshly synced data is served immediately instead of
-    // waiting out each route's revalidate window. Next 16 requires the second profile
-    // arg; "max" is Next's recommended value for route-handler tag purges.
-    revalidateTag("cricclubs", "max");
     const failed = Object.entries(summary.steps).filter(
       ([, s]) => s.status === "error"
     );
+    if (failed.length === 0) {
+      refreshCompetitiveCache(process.env.SYNC_ALL === "1");
+    }
     return NextResponse.json(
       { ok: failed.length === 0, failed: failed.map(([e]) => e), ...summary },
       { status: failed.length === 0 ? 200 : 207 }

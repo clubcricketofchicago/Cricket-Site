@@ -36,6 +36,7 @@ npm run dev               # http://localhost:3000
 | --- | --- |
 | `npm run dev` / `build` / `start` | Next.js dev / production build / serve |
 | `npm run lint` | ESLint (`eslint app`) |
+| `npm run test:cache` | Cache policy, reader wiring, and refresh endpoint tests |
 | `npm run sync` | Sync CricClubs → Postgres |
 | `npm run db:push` / `db:studio` | Apply schema / open Prisma Studio |
 
@@ -43,6 +44,7 @@ npm run dev               # http://localhost:3000
 
 - **[DEPLOYMENT.md](DEPLOYMENT.md)** — production deploy (Vercel) + the data-sync cron
 - **[docs/DATA_LAYER.md](docs/DATA_LAYER.md)** — the CricClubs→Postgres data layer
+- **[docs/CACHE_POLICY.md](docs/CACHE_POLICY.md)** — competitive-data caching and post-sync refresh
 - **[CLAUDE.md](CLAUDE.md)** — architecture guide for contributors / AI agents
 - **[HUMAN.md](HUMAN.md)** — plain-English overview (no coding needed)
 

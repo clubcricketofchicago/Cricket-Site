@@ -4,6 +4,7 @@
 // directly so one match is never multiplied by the number of players involved.
 
 import { unstable_cache } from "next/cache";
+import { COMPETITIVE_CACHE } from "./cachePolicy";
 import { TRACKED_SERIES, TRACKED_SERIES_IDS } from "../cricclubs/config";
 import { prisma } from "../db/prisma";
 import { cccMatchOr, isCCCSide } from "./ccc";
@@ -80,5 +81,5 @@ async function buildClubHistoryTotals(): Promise<ClubHistoryTotals> {
 export const getClubHistoryTotals = unstable_cache(
   buildClubHistoryTotals,
   ["club-history-totals"],
-  { revalidate: 600, tags: ["cricclubs"] }
+  COMPETITIVE_CACHE
 );

@@ -3,6 +3,7 @@
 // existing once-then-store rule.
 
 import { ImageResponse } from "next/og";
+import { COMPETITIVE_RESPONSE_HEADERS } from "../../lib/data/cachePolicy";
 import { getMatchCard } from "../../lib/data/match";
 
 export const runtime = "nodejs";
@@ -179,6 +180,6 @@ export default async function OgImage({
         </div>
       </div>
     ),
-    size
+    { ...size, headers: COMPETITIVE_RESPONSE_HEADERS }
   );
 }
