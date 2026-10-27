@@ -7,15 +7,15 @@ Editorial CMS content keeps its existing behavior.
 
 | Data | Cache TTL | Invalidated by |
 | --- | --- | --- |
-| Current or mixed seasons, roster, home, results, reports, records, player profiles and match cards | 12 hours | Every successful sync refresh (`cricclubs`) |
-| A known historical tournament year and its fixture reader | 30 days | Full-backfill refresh only (`cricclubs-history`) |
+| Current or mixed seasons, roster, home, results, reports, records, player profiles and current match cards | 12 hours | Every successful sync refresh (`cricclubs`) |
+| A known historical tournament year, its fixture reader, and historical match cards | 30 days | Full-backfill refresh only (`cricclubs-history`) |
 
 Twelve hours covers the eight-hour sync interval with room for a delayed run. It is
 a recovery mechanism if the webhook fails, not a polling schedule. Expiry causes
 a refresh on a later request. Historical entries have their own tag so routine
 syncs do not drop them. All-season aggregates include current data and therefore
-use the current policy. Historical match/player pages still share the current
-reader policy because determining their season would require an additional read.
+use the current policy. Match readers use a cached series lookup to select the
+historical or current policy. Historical player pages still use the current policy.
 
 ## Refresh after sync
 
