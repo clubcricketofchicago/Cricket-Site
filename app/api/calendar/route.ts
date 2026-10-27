@@ -1,3 +1,4 @@
+import { COMPETITIVE_RESPONSE_HEADERS } from "../../lib/data/cachePolicy";
 // Upcoming CCC fixtures as an iCalendar feed, so members can subscribe from
 // Apple/Google/Outlook calendars. Reads the same cached DB entries as /api/schedule.
 
@@ -69,7 +70,7 @@ export async function GET() {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
       "Content-Disposition": 'inline; filename="ccc-fixtures.ics"',
-      "Cache-Control": "public, s-maxage=600, stale-while-revalidate=1800",
+      ...COMPETITIVE_RESPONSE_HEADERS,
     },
   });
 }

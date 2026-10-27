@@ -2,6 +2,7 @@
 // from CricClubs and pairs it with the DB match row (teams, result, date, series).
 
 import { unstable_cache } from "next/cache";
+import { COMPETITIVE_CACHE } from "./cachePolicy";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../db/prisma";
 import { getScoreCard } from "../cricclubs/endpoints";
@@ -181,7 +182,4 @@ async function buildMatchCard(matchId: number) {
 }
 
 // Completed scorecards don't change, so cache aggressively (revalidated by sync tag).
-export const getMatchCard = unstable_cache(buildMatchCard, ["match-card"], {
-  revalidate: 600,
-  tags: ["cricclubs"],
-});
+export const getMatchCard = unstable_cache(buildMatchCard, ["match-card"], COMPETITIVE_CACHE);

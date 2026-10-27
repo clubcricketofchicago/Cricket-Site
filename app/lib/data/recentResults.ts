@@ -2,6 +2,7 @@
 // Used by the home "Recent Results" widget. Scores/result are from CCC's perspective.
 
 import { unstable_cache } from "next/cache";
+import { COMPETITIVE_CACHE } from "./cachePolicy";
 import { prisma } from "../db/prisma";
 import { cccMatchOr, isCCCSide } from "./ccc";
 
@@ -72,5 +73,5 @@ async function buildRecentResults(limit = 6): Promise<RecentResult[]> {
 export const getRecentResults = unstable_cache(
   buildRecentResults,
   ["recent-results"],
-  { revalidate: 120, tags: ["cricclubs"] }
+  COMPETITIVE_CACHE
 );

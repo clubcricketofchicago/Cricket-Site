@@ -8,6 +8,7 @@
 // Values are shown raw, exactly as CricClubs reports them.
 
 import { unstable_cache } from "next/cache";
+import { COMPETITIVE_CACHE } from "./cachePolicy";
 import { prisma } from "../db/prisma";
 import { TRACKED_SERIES, TRACKED_SERIES_IDS } from "../cricclubs/config";
 import { isCCCSide } from "./ccc";
@@ -232,7 +233,4 @@ async function buildClubRecords(): Promise<ClubRecords> {
   };
 }
 
-export const getClubRecords = unstable_cache(buildClubRecords, ["club-records"], {
-  revalidate: 600,
-  tags: ["cricclubs"],
-});
+export const getClubRecords = unstable_cache(buildClubRecords, ["club-records"], COMPETITIVE_CACHE);

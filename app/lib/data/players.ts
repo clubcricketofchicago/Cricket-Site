@@ -5,6 +5,7 @@
 // page, served from the DB — see app/lib/data/player.ts.)
 
 import { unstable_cache } from "next/cache";
+import { COMPETITIVE_CACHE } from "./cachePolicy";
 import { prisma } from "../db/prisma";
 import { CCC_TEAM_IDS, TRACKED_SERIES_IDS, TRACKED_SERIES } from "../cricclubs/config";
 
@@ -142,5 +143,5 @@ async function buildPlayerEntries(): Promise<{ entries: Entry[] }> {
 export const getPlayerEntries = unstable_cache(
   buildPlayerEntries,
   ["player-entries"],
-  { revalidate: 600, tags: ["cricclubs"] }
+  COMPETITIVE_CACHE
 );

@@ -4,6 +4,7 @@
 // Raw CricClubs values are shown as-is; nothing is clamped or normalized.
 
 import { unstable_cache } from "next/cache";
+import { COMPETITIVE_CACHE } from "./cachePolicy";
 import { prisma } from "../db/prisma";
 import { cccMatchOr, isCCCSide } from "./ccc";
 
@@ -267,5 +268,5 @@ async function buildMatchReports(limit = 6): Promise<MatchReport[]> {
 export const getMatchReports = unstable_cache(
   buildMatchReports,
   ["match-reports"],
-  { revalidate: 120, tags: ["cricclubs"] }
+  COMPETITIVE_CACHE
 );

@@ -17,6 +17,8 @@ app/lib/cricclubs/            CricClubs API client
 app/lib/db/prisma.ts          PrismaClient singleton
 app/lib/sync/index.ts         endpoint -> upsert mappers + syncAll() orchestrator
 app/api/sync/route.ts         GET /api/sync (Bearer CRON_SECRET) -> runs syncAll
+app/api/cache-refresh/route.ts POST /api/cache-refresh (Bearer CACHE_REFRESH_SECRET)
+                              -> expires reader caches without running sync
 scripts/sync.ts               `npm run sync` (CLI/cron)
 scripts/cricclubs-smoke.ts    `npm run cricclubs:smoke` (API check, no DB)
 ```
@@ -64,9 +66,17 @@ GET /api/sync
 Authorization: Bearer ${CRON_SECRET}
 ```
 
-Suggested cadence (e.g. Vercel Cron hitting `/api/sync`, or system cron hitting `npm run sync`):
-results/standings/stats frequently on match days, schedule/series/rosters daily. The sync
-records per-entity status in the `sync_state` table; one failing step never aborts the rest.
+The production GitHub Actions workflow runs `npm run sync` every eight hours and
+calls `/api/cache-refresh` only after success. Configure `CACHE_REFRESH_SECRET` in
+Vercel Production and GitHub Actions, then deploy; see [DEPLOYMENT.md §5](../DEPLOYMENT.md).
+The sync records per-entity status in `sync_state`; one failing step never aborts
+the rest, but any failed step prevents the post-sync refresh. HTTP `/api/sync`
+invalidates caches itself after full success.
+
+Reader caches last 12 hours for current/mixed data, with separate 30-day caches for
+historical tournament seasons and fixtures. A full historical CLI backfill needs
+an authenticated `POST /api/cache-refresh?scope=all`; routine sync preserves that
+history. See [CACHE_POLICY.md](CACHE_POLICY.md) for freshness, HTTP headers and tests.
 
 ## Field coverage
 

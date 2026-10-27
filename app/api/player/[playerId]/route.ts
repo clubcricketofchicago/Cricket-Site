@@ -1,3 +1,4 @@
+import { COMPETITIVE_RESPONSE_HEADERS } from "../../../lib/data/cachePolicy";
 import { NextRequest, NextResponse } from "next/server";
 import { getPlayerProfile } from "../../../lib/data/player";
 
@@ -16,7 +17,7 @@ export async function GET(
   try {
     const data = await getPlayerProfile(id);
     return NextResponse.json(data, {
-      headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=900" },
+      headers: { ...COMPETITIVE_RESPONSE_HEADERS },
     });
   } catch (err) {
     return NextResponse.json(

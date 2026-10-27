@@ -2,6 +2,7 @@
 // pulled live from CricClubs, plus this season's stats from the DB.
 
 import { unstable_cache } from "next/cache";
+import { COMPETITIVE_CACHE } from "./cachePolicy";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../db/prisma";
 import { TRACKED_SERIES } from "../cricclubs/config";
@@ -250,5 +251,5 @@ async function buildPlayerProfile(playerId: number) {
 export const getPlayerProfile = unstable_cache(
   buildPlayerProfile,
   ["player-profile"],
-  { revalidate: 600, tags: ["cricclubs"] }
+  COMPETITIVE_CACHE
 );

@@ -2,7 +2,7 @@ name: Sync CricClubs data
 
 # Keeps the Neon DB fresh from CricClubs (the site reads from the DB). Runs on a schedule
 # and can be triggered manually. Requires repo secrets:
-#   DATABASE_URL, DIRECT_URL, X_API_KEY, X_CONSUMER_KEY
+#   DATABASE_URL, DIRECT_URL, X_API_KEY, X_CONSUMER_KEY, CACHE_REFRESH_SECRET
 # (Public repo → Actions minutes are free.)
 
 on:
@@ -32,3 +32,23 @@ jobs:
       - run: npm ci
       - name: Sync CricClubs -> Neon
         run: npm run sync
+      - name: Refresh website data cache
+        # Runs only after a successful sync. This endpoint never runs the sync.
+        env:
+          CACHE_REFRESH_SECRET: ${{ secrets.CACHE_REFRESH_SECRET }}
+        run: |
+          if [ -z "$CACHE_REFRESH_SECRET" ]; then
+            echo "::error::Configure CACHE_REFRESH_SECRET in Actions and Vercel before running the refresh hook."
+            exit 1
+          fi
+          status=$(curl --fail --silent --show-error \
+            --connect-timeout 10 --max-time 20 \
+            --retry 3 --retry-delay 2 --retry-max-time 60 \
+            --request POST \
+            --header "Authorization: Bearer $CACHE_REFRESH_SECRET" \
+            --output /dev/null --write-out '%{http_code}' \
+            https://www.clubcricketofchicago.com/api/cache-refresh)
+          if [ "$status" != "200" ]; then
+            echo "::error::Cache refresh returned HTTP $status; expected 200 from the canonical endpoint."
+            exit 1
+          fi

@@ -2,6 +2,7 @@
 // Reads the same cached DB-backed profile as the page.
 
 import { ImageResponse } from "next/og";
+import { COMPETITIVE_RESPONSE_HEADERS } from "../../lib/data/cachePolicy";
 import { getPlayerProfile } from "../../lib/data/player";
 
 export const runtime = "nodejs";
@@ -127,6 +128,6 @@ export default async function OgImage({
         </div>
       </div>
     ),
-    size
+    { ...size, headers: COMPETITIVE_RESPONSE_HEADERS }
   );
 }

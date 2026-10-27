@@ -3,6 +3,7 @@
 // stat highlights, top performers, and a division standings snapshot.
 
 import { unstable_cache } from "next/cache";
+import { COMPETITIVE_CACHE } from "./cachePolicy";
 import { prisma } from "../db/prisma";
 import { TRACKED_SERIES } from "../cricclubs/config";
 import { CCC_NAME, isCCCName, isCCCSide, cccMatchOr, cccFixtureOr } from "./ccc";
@@ -265,7 +266,4 @@ async function buildHomeData(): Promise<HomeData> {
   };
 }
 
-export const getHomeData = unstable_cache(buildHomeData, ["home-data"], {
-  revalidate: 120,
-  tags: ["cricclubs"],
-});
+export const getHomeData = unstable_cache(buildHomeData, ["home-data"], COMPETITIVE_CACHE);

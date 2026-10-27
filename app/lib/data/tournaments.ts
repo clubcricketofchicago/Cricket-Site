@@ -3,6 +3,7 @@
 // page renders identically while sourced from CricClubs. See REBUILD_PLAN §12.
 
 import { unstable_cache } from "next/cache";
+import { COMPETITIVE_CACHE, HISTORIC_CACHE, isHistoricSeason, isHistoricSeries } from "./cachePolicy";
 import { prisma } from "../db/prisma";
 import { TRACKED_SERIES } from "../cricclubs/config";
 import { CCC_NAME, isCCCName, isCCCSide, cccMatchOr } from "./ccc";
@@ -364,7 +365,7 @@ async function buildTournamentList(): Promise<{ entries: Entry[] }> {
 export const getTournamentList = unstable_cache(
   buildTournamentList,
   ["tournament-list"],
-  { revalidate: 300, tags: ["cricclubs"] }
+  COMPETITIVE_CACHE
 );
 
 /**
@@ -378,11 +379,22 @@ async function buildTournamentEntries(year?: string): Promise<{ entries: Entry[]
 }
 
 // Heavy (builds a season's series, or all). Cached per `year` arg; refreshed by sync tag.
-export const getTournamentEntries = unstable_cache(
+const getCurrentTournamentEntries = unstable_cache(
   buildTournamentEntries,
   ["tournament-entries"],
-  { revalidate: 120, tags: ["cricclubs"] }
+  COMPETITIVE_CACHE
 );
+const getHistoricTournamentEntries = unstable_cache(
+  buildTournamentEntries,
+  ["tournament-history"],
+  HISTORIC_CACHE
+);
+
+export function getTournamentEntries(year?: string) {
+  return isHistoricSeason(year)
+    ? getHistoricTournamentEntries(year)
+    : getCurrentTournamentEntries(year);
+}
 
 /** Upcoming fixtures for a series, shaped like the CMS fixture entries. */
 async function buildFixtureEntries(slug: string): Promise<{ entries: Entry[] }> {
@@ -417,8 +429,19 @@ async function buildFixtureEntries(slug: string): Promise<{ entries: Entry[] }> 
   return { entries };
 }
 
-export const getFixtureEntries = unstable_cache(
+const getCurrentFixtureEntries = unstable_cache(
   buildFixtureEntries,
   ["fixture-entries"],
-  { revalidate: 120, tags: ["cricclubs"] }
+  COMPETITIVE_CACHE
 );
+const getHistoricFixtureEntries = unstable_cache(
+  buildFixtureEntries,
+  ["fixture-history"],
+  HISTORIC_CACHE
+);
+
+export function getFixtureEntries(slug: string) {
+  return isHistoricSeries(slug)
+    ? getHistoricFixtureEntries(slug)
+    : getCurrentFixtureEntries(slug);
+}
