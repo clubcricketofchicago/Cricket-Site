@@ -2,7 +2,7 @@
 // from CricClubs and pairs it with the DB match row (teams, result, date, series).
 
 import { unstable_cache } from "next/cache";
-import { COMPETITIVE_CACHE } from "./cachePolicy";
+import { COMPETITIVE_CACHE, HISTORIC_CACHE, isHistoricSeries } from "./cachePolicy";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../db/prisma";
 import { getScoreCard } from "../cricclubs/endpoints";
@@ -181,5 +181,37 @@ async function buildMatchCard(matchId: number) {
   };
 }
 
-// Completed scorecards don't change, so cache aggressively (revalidated by sync tag).
-export const getMatchCard = unstable_cache(buildMatchCard, ["match-card"], COMPETITIVE_CACHE);
+async function buildMatchSeriesId(matchId: number) {
+  const match = await prisma.match.findUnique({
+    where: { id: matchId },
+    select: { seriesId: true },
+  });
+  return match?.seriesId ?? null;
+}
+
+// A synchronized match never changes series, so this lookup can survive routine
+// current-season refreshes. Missing ids route through the current cache: a later
+// routine sync can populate that reader without needing to change this null result.
+const getMatchSeriesId = unstable_cache(
+  buildMatchSeriesId,
+  ["match-series"],
+  HISTORIC_CACHE
+);
+const getHistoricMatchCard = unstable_cache(
+  buildMatchCard,
+  ["historic-match-card"],
+  HISTORIC_CACHE
+);
+const getCurrentMatchCard = unstable_cache(
+  buildMatchCard,
+  ["current-match-card"],
+  COMPETITIVE_CACHE
+);
+
+export async function getMatchCard(matchId: number) {
+  const seriesId = await getMatchSeriesId(matchId);
+  if (seriesId != null && isHistoricSeries(String(seriesId))) {
+    return getHistoricMatchCard(matchId);
+  }
+  return getCurrentMatchCard(matchId);
+}

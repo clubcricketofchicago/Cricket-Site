@@ -17,7 +17,6 @@ test("every competitive reader uses the shared policy, with isolated historical 
 
   const readers = await Promise.all([
     import("./home").then((m) => () => m.getHomeData()),
-    import("./match").then((m) => () => m.getMatchCard(1)),
     import("./player").then((m) => () => m.getPlayerProfile(1)),
     import("./players").then((m) => () => m.getPlayerEntries()),
     import("./matchReports").then((m) => () => m.getMatchReports()),
@@ -39,6 +38,11 @@ test("every competitive reader uses the shared policy, with isolated historical 
     await read();
     assert.deepEqual(selectedPolicies, [COMPETITIVE_CACHE]);
   }
+
+  const { getMatchCard } = await import("./match");
+  selectedPolicies.length = 0;
+  await getMatchCard(1);
+  assert.deepEqual(selectedPolicies, [HISTORIC_CACHE, COMPETITIVE_CACHE]);
 
   for (const series of TRACKED_SERIES) {
     selectedPolicies.length = 0;

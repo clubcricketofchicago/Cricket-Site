@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint app",
-    "test:cache": "tsx --test app/lib/data/cachePolicy.test.ts app/lib/data/cacheReaders.test.ts app/api/cache-refresh/route.test.ts",
+    "test:cache": "tsx --test app/lib/data/cachePolicy.test.ts app/lib/data/cacheReaders.test.ts app/lib/data/matchCache.test.ts app/api/cache-refresh/route.test.ts",
     "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
